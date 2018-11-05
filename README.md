@@ -1,7 +1,7 @@
-# ＃3 Gopher道場
-＃3 Gopher道場用のリポジトリです。
+# ＃4 Gopher道場
+＃4 Gopher道場用のリポジトリです。
 
-connpass: https://mercari.connpass.com/event/95886/
+connpass: https://mercari.connpass.com/event/102010/
 
 ## 課題の提出方法
 

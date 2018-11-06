@@ -81,6 +81,7 @@ func convert(img image.Image, dest, format string) error {
 
 	switch format {
 	case "jpg":
+		jpeg.Encode(out, img, nil)
 	case "png":
 		png.Encode(out, img)
 	case "gif":

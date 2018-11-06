@@ -19,11 +19,11 @@ import (
 // ディレクトリを探索して見つかったファイルをコンバート
 func Converts(dirPath, srcFormat, distFormat string) error {
 	return fileWalk(dirPath, srcFormat, func(path string) error {
-		dest := changeExt(path, distFormat)
 		img, err := decode(path, srcFormat)
 		if err != nil {
 			return err
 		}
+		dest := changeExt(path, distFormat)
 		err = convert(img, dest, distFormat)
 		fmt.Printf("%s -> %s\n", path, dest)
 		return err

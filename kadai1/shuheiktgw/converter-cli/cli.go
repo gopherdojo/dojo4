@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/shuheiktgw/dojo4/kadai1/converter-cli/converter"
+	"github.com/shuheiktgw/dojo4/kadai1/shuheiktgw/converter-cli/converter"
 )
 
 const (

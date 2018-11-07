@@ -1,12 +1,12 @@
 converter-cli
 ===
 
+converter-cli is a command line tool to convert image extension.
+
 ## Usage
 
 ```
 converter-cli [options...] PATH
-
-converter-cli is a command line tool to convert image extension
 
 OPTIONS:
   --from value, -f value  specifies a image extension converted from (default: .jpg)

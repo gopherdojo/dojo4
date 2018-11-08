@@ -112,17 +112,19 @@ func TestPngConv_IsConvertible(t *testing.T) {
 			},
 			want: false,
 		},
+		{
+			name: "No file is not convertible",
+			args: args{
+				path: "dummy",
+			},
+			want: false,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			p := imgconv.PngConv{}
-			info, err := os.Stat(tt.args.path)
-			if err != nil {
-				t.Error("unexpected error:", err)
-				return
-			}
 
-			if got := p.IsConvertible(tt.args.path, info); got != tt.want {
+			if got := p.IsConvertible(tt.args.path); got != tt.want {
 				t.Errorf("PngConv.IsConvertible() = %v, want %v", got, tt.want)
 			}
 		})

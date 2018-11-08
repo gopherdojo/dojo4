@@ -12,6 +12,7 @@ import (
 
 type ImageConv interface {
 	Convert(src, dest string) error
+	IsConvertible(path string) bool
 }
 
 type PngConv struct{}
@@ -44,7 +45,12 @@ func (PngConv) Convert(src, dest string) error {
 	return nil
 }
 
-func (PngConv) IsConvertible(path string, info os.FileInfo) bool {
+func (PngConv) IsConvertible(path string) bool {
+	info, err := os.Stat(path)
+	if err != nil {
+		return false
+	}
+
 	if info.IsDir() {
 		return false
 	}

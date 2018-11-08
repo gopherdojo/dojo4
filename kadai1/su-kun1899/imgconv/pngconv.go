@@ -8,8 +8,6 @@ import (
 	_ "image/jpeg"
 	"image/png"
 	"os"
-	"path/filepath"
-	"strings"
 )
 
 type ImageConv interface {
@@ -63,11 +61,4 @@ func (PngConv) IsConvertible(path string, info os.FileInfo) bool {
 	}
 
 	return format == "jpeg"
-}
-
-func ReplaceExt(fileName, newExt string) string {
-	return fmt.Sprintf(
-		"%s.%s", strings.TrimSuffix(fileName, filepath.Ext(fileName)),
-		newExt,
-	)
 }

@@ -75,36 +75,6 @@ func getFormat(t *testing.T, path string) string {
 	return format
 }
 
-func TestReplaceExt(t *testing.T) {
-	type args struct {
-		fileName string
-		newExt   string
-	}
-	tests := []struct {
-		name string
-		args args
-		want string
-	}{
-		{name: "txt to dat", args: args{fileName: "foo.txt", newExt: "dat"}, want: "foo.dat"},
-		{name: "jpg to png", args: args{fileName: "foo.jpg", newExt: "png"}, want: "foo.png"},
-		{
-			name: "path included",
-			args: args{
-				fileName: filepath.Join("foo", "baz", "bar.jpg"),
-				newExt:   "png",
-			},
-			want: filepath.Join("foo", "baz", "bar.png"),
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := imgconv.ReplaceExt(tt.args.fileName, tt.args.newExt); got != tt.want {
-				t.Errorf("ReplaceExt() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
 func TestPngConv_IsConvertible(t *testing.T) {
 	type args struct {
 		path string

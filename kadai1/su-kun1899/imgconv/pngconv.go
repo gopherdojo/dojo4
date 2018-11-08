@@ -46,6 +46,25 @@ func (PngConv) Convert(src, dest string) error {
 	return nil
 }
 
+func (PngConv) IsConvertible(path string, info os.FileInfo) bool {
+	if info.IsDir() {
+		return false
+	}
+
+	file, err := os.Open(path)
+	if err != nil {
+		return false
+	}
+	defer file.Close()
+
+	_, format, err := image.Decode(file)
+	if err != nil {
+		return false
+	}
+
+	return format == "jpeg"
+}
+
 func ReplaceExt(fileName, newExt string) string {
 	return fmt.Sprintf(
 		"%s.%s", strings.TrimSuffix(fileName, filepath.Ext(fileName)),

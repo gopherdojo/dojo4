@@ -4,10 +4,17 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"path/filepath"
+	"strings"
 
 	"github.com/iwata/dojo4/kadai1/iwata/cmdparser"
 	"github.com/iwata/dojo4/kadai1/iwata/converter"
 )
+
+type filterConfig interface {
+	SrcDir() string
+	FromFormat() string
+}
 
 func main() {
 	c, err := cmdparser.Parse()
@@ -15,27 +22,34 @@ func main() {
 		log.Fatal(err)
 	}
 
-	src, err := os.Open(c.SrcDir())
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer src.Close()
-
-	cv, err := converter.ResolveConverter(src, c)
+	files, err := filterFiles(c)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	dist := fmt.Sprintf("%s.%s", c.SrcDir(), c.ToFormat())
-	df, err := os.Create(dist)
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer df.Close()
-
-	if err := cv.Convert(df); err != nil {
+	if err := converter.ConvertFiles(files, c); err != nil {
 		log.Fatal(err)
 	}
 
-	fmt.Printf("convert %s to %s", c.SrcDir(), dist)
+	fmt.Printf("Converted %d %s files to %s in %s successfully\n", len(files), c.FromFormat(), c.ToFormat(), c.SrcDir())
+}
+
+func filterFiles(c filterConfig) ([]string, error) {
+	var files []string
+	ext := fmt.Sprintf(".%s", c.FromFormat())
+
+	err := filepath.Walk(c.SrcDir(), func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+		if info.IsDir() {
+			return nil
+		}
+		if strings.HasSuffix(path, ext) {
+			files = append(files, path)
+		}
+		return nil
+	})
+
+	return files, err
 }

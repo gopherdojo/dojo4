@@ -12,8 +12,7 @@ type ConvertOption interface {
 	ToFormat() string
 }
 
-// ResolveConverter resolves a Converter instance
-func ResolveConverter(src io.Reader, opt ConvertOption) (Converter, error) {
+func resolveConverter(src io.Reader, opt ConvertOption) (Converter, error) {
 	img, _, err := image.Decode(src)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to decode: %s", err)

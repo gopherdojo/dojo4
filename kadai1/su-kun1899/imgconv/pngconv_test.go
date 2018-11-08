@@ -25,7 +25,7 @@ func TestPngConv_Convert(t *testing.T) {
 			name: "png to jpeg",
 			args: args{
 				src:  filepath.Join("testdata", "Jpeg.jpg"),
-				dest: filepath.Join("testdata", "Png.png"),
+				dest: filepath.Join("testdata", "JpegToPng.png"),
 			},
 			wantErr: false,
 		},

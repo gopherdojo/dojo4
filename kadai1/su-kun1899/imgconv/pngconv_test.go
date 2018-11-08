@@ -61,13 +61,13 @@ func TestPngConv_Convert(t *testing.T) {
 func getFormat(t *testing.T, path string) string {
 	t.Helper()
 
-	reader, err := os.Open(path)
+	file, err := os.Open(path)
 	if err != nil {
 		t.Fatal("unexpected error:", err)
 	}
-	defer reader.Close()
+	defer file.Close()
 
-	_, format, err := image.Decode(reader)
+	_, format, err := image.Decode(file)
 	if err != nil {
 		t.Fatal("unexpected error:", err)
 	}

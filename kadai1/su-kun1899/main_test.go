@@ -50,3 +50,40 @@ func Test_listFiles(t *testing.T) {
 		return
 	}
 }
+
+func Test_runCmd(t *testing.T) {
+	// given
+	targetDir := "testdata"
+	expected := []string{
+		filepath.Join("testdata", "Jpeg.png"),
+		filepath.Join("testdata", "foo", "Jpeg.png"),
+		filepath.Join("testdata", "foo", "baz", "Jpeg.png"),
+		filepath.Join("testdata", "foo", "baz", "bar", "Jpeg.png"),
+	}
+
+	// when
+	got := runCmd([]string{targetDir})
+
+	// then
+	if got != 0 {
+		t.Errorf("runCmd() = %v, want %v", got, 0)
+	}
+
+	// and
+	for _, created := range expected {
+		if _, err := os.Stat(created); err != nil {
+			t.Error("unexpected error:", err)
+			return
+		}
+	}
+
+	// cleanup
+	defer func() {
+		for _, created := range expected {
+			if err := os.Remove(created); err != nil {
+				t.Error("unexpected error:", err)
+				return
+			}
+		}
+	}()
+}

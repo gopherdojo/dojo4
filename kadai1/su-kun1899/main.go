@@ -3,6 +3,7 @@ package main
 import (
 	"errors"
 	"fmt"
+	"github.com/gopherdojo/dojo4/kadai1/su-kun1899/imgconv"
 	"os"
 	"path/filepath"
 	"strings"
@@ -19,11 +20,30 @@ func runCmd(args []string) int {
 	}
 
 	targetDir := args[0]
-	println(targetDir)
+	converter := imgconv.PngConv{}
+	err := filepath.Walk(targetDir, func(path string, info os.FileInfo, err error) error {
+		if !converter.IsConvertible(path) {
+			return nil
+		}
+
+		src := path
+		dest := replaceExt(src, "png")
+		err = converter.Convert(src, dest)
+		if err != nil {
+			return err
+		}
+		fmt.Fprintf(os.Stdout, "%s => %s\n", src, dest)
+
+		return nil
+	})
+
+	if err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		return 1
+	}
 
 	return 0
 }
-
 
 func replaceExt(fileName, newExt string) string {
 	return fmt.Sprintf("%s.%s", strings.TrimSuffix(fileName, filepath.Ext(fileName)), newExt)

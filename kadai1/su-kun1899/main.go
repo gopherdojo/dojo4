@@ -10,7 +10,7 @@ func main() {
 	fmt.Println("Hello, dojo")
 }
 
-func ReplaceExt(fileName, newExt string) string {
+func replaceExt(fileName, newExt string) string {
 	return fmt.Sprintf(
 		"%s.%s", strings.TrimSuffix(fileName, filepath.Ext(fileName)),
 		newExt,

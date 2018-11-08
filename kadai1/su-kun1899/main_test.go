@@ -45,8 +45,8 @@ func TestReplaceExt(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := ReplaceExt(tt.args.fileName, tt.args.newExt); got != tt.want {
-				t.Errorf("ReplaceExt() = %v, want %v", got, tt.want)
+			if got := replaceExt(tt.args.fileName, tt.args.newExt); got != tt.want {
+				t.Errorf("replaceExt() = %v, want %v", got, tt.want)
 			}
 		})
 	}

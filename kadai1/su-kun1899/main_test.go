@@ -1,13 +1,16 @@
 package main_test
 
 import (
+	"fmt"
 	"image"
 	_ "image/gif"
 	_ "image/jpeg"
 	"image/png"
 	_ "image/png"
 	"os"
+	"path/filepath"
 	"reflect"
+	"strings"
 	"testing"
 )
 
@@ -17,9 +20,9 @@ func Test_format(t *testing.T) {
 		fileName string
 		want     string
 	}{
-		{"gif", "testdata/syokuji_computer.gif", "gif"},
-		{"png", "testdata/syokuji_computer.png", "png"},
-		{"jpeg", "testdata/syokuji_computer.jpg", "jpeg"},
+		{"gif", filepath.Join("testdata", "syokuji_computer.gif"), "gif"},
+		{"png", filepath.Join("testdata", "syokuji_computer.png"), "png"},
+		{"jpeg", filepath.Join("testdata", "syokuji_computer.jpg"), "jpeg"},
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
@@ -47,7 +50,7 @@ func Test_format(t *testing.T) {
 func Test_convert(t *testing.T) {
 	t.Skip()
 
-	reader, err := os.Open("testdata/syokuji_computer.jpg")
+	reader, err := os.Open(filepath.Join("testdata", "syokuji_computer.jpg"))
 	if err != nil {
 		t.Error("unexpected error:", err)
 		return
@@ -71,6 +74,17 @@ func Test_convert(t *testing.T) {
 	err = png.Encode(writer, img)
 	if err != nil {
 		t.Error("unexpected error:", err)
+		return
+	}
+}
+
+func Test_convertExt(t *testing.T) {
+	before := filepath.Join("testdata", "syokuji_computer.jpg")
+	want := filepath.Join("testdata", "syokuji_computer.png")
+	got := fmt.Sprintf("%s.%s", strings.TrimSuffix(before, filepath.Ext(before)), "png")
+
+	if got != want {
+		t.Errorf("got = %v, want %v", got, want)
 		return
 	}
 }

@@ -6,7 +6,7 @@ import (
 	"testing"
 )
 
-func TestReplaceExt(t *testing.T) {
+func Test_replaceExt(t *testing.T) {
 	type args struct {
 		fileName string
 		newExt   string

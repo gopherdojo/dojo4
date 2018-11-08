@@ -87,3 +87,25 @@ func Test_runCmd(t *testing.T) {
 		}
 	}()
 }
+
+func Test_runCmd_err(t *testing.T) {
+	type args struct {
+		args []string
+	}
+	tests := []struct {
+		name string
+		args args
+		want int
+	}{
+		{name: "many args", args: args{[]string{"foo", "baz"}}, want: 1},
+		{name: "no args", args: args{[]string{}}, want: 1},
+		{name: "nil args", args: args{nil}, want: 1},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := runCmd(tt.args.args); got != tt.want {
+				t.Errorf("runCmd() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}

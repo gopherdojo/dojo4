@@ -1,6 +1,7 @@
-package imgconv
+package imgconv_test
 
 import (
+	"github.com/gopherdojo/dojo4/kadai1/su-kun1899/imgconv"
 	"os"
 	"path/filepath"
 	"testing"
@@ -28,7 +29,7 @@ func TestPngConv_Convert(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			// given
-			j := PngConv{}
+			j := imgconv.PngConv{}
 			defer func() {
 				if err := os.Remove(tt.args.dest); err != nil {
 					t.Error("unexpected error:", err)

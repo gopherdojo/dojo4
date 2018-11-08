@@ -3,6 +3,7 @@ package cmdparser
 import (
 	"flag"
 	"fmt"
+	"os"
 )
 
 // CmdConfig is a configuration
@@ -30,8 +31,18 @@ func (c *CmdConfig) ToFormat() string {
 // Parse is method to parse from command args
 func Parse() (*CmdConfig, error) {
 	c := &CmdConfig{}
-	flag.StringVar(&c.fromExt, "from", "jpg", "Convert from image extention")
-	flag.StringVar(&c.toExt, "to", "png", "Convert to image extention")
+	flag.StringVar(&c.fromExt, "from", "jpg", "Convert from image format")
+	flag.StringVar(&c.toExt, "to", "png", "Convert to image format")
+
+	flag.Usage = func() {
+		fmt.Fprintf(os.Stderr, `
+Usage of %s:
+   %s [OPTIONS] DIR
+oPTIONS
+`, os.Args[0], os.Args[0])
+		flag.PrintDefaults()
+	}
+
 	flag.Parse()
 
 	if flag.NArg() != 1 {

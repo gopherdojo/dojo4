@@ -2,6 +2,7 @@ package imgconv_test
 
 import (
 	"github.com/gopherdojo/dojo4/kadai1/su-kun1899/imgconv"
+	"image"
 	"os"
 	"path/filepath"
 	"testing"
@@ -43,9 +44,30 @@ func TestPngConv_Convert(t *testing.T) {
 			// then
 			if (err != nil) != tt.wantErr {
 				t.Errorf("PngConv.Convert() error = %v, wantErr %v", err, tt.wantErr)
+				return
 			}
 
-			// TODO 変換後のファイルを確認する
+			// and
+			if format := getFormat(t, tt.args.dest); format != "png" {
+				t.Errorf("format = %v, want %v", format, "png")
+			}
 		})
 	}
+}
+
+func getFormat(t *testing.T, path string) string {
+	t.Helper()
+
+	reader, err := os.Open(path)
+	if err != nil {
+		t.Fatal("unexpected error:", err)
+	}
+	defer reader.Close()
+
+	_, format, err := image.Decode(reader)
+	if err != nil {
+		t.Fatal("unexpected error:", err)
+	}
+
+	return format
 }

@@ -2,9 +2,10 @@ package main_test
 
 import (
 	"image"
-	_ "image/jpeg"
-	_ "image/png"
 	_ "image/gif"
+	_ "image/jpeg"
+	"image/png"
+	_ "image/png"
 	"os"
 	"reflect"
 	"testing"
@@ -40,5 +41,36 @@ func Test_format(t *testing.T) {
 				return
 			}
 		})
+	}
+}
+
+func Test_convert(t *testing.T) {
+	t.Skip()
+
+	reader, err := os.Open("testdata/syokuji_computer.jpg")
+	if err != nil {
+		t.Error("unexpected error:", err)
+		return
+	}
+	defer reader.Close()
+
+	img, _, err := image.Decode(reader)
+	if err != nil {
+		t.Error("unexpected error:", err)
+		return
+	}
+
+	writer, err := os.Create("testdata/writer.png")
+	if err != nil {
+		t.Error("unexpected error:", err)
+		return
+	}
+	defer writer.Close()
+	defer os.Remove("testdata/writer.png")
+
+	err = png.Encode(writer, img)
+	if err != nil {
+		t.Error("unexpected error:", err)
+		return
 	}
 }

@@ -48,8 +48,6 @@ func Test_format(t *testing.T) {
 }
 
 func Test_convert(t *testing.T) {
-	t.Skip()
-
 	reader, err := os.Open(filepath.Join("testdata", "syokuji_computer.jpg"))
 	if err != nil {
 		t.Error("unexpected error:", err)

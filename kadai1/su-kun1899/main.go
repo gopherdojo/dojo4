@@ -11,8 +11,5 @@ func main() {
 }
 
 func replaceExt(fileName, newExt string) string {
-	return fmt.Sprintf(
-		"%s.%s", strings.TrimSuffix(fileName, filepath.Ext(fileName)),
-		newExt,
-	)
+	return fmt.Sprintf("%s.%s", strings.TrimSuffix(fileName, filepath.Ext(fileName)), newExt)
 }

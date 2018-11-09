@@ -48,6 +48,9 @@ oPTIONS
 	if flag.NArg() != 1 {
 		return nil, fmt.Errorf("Not support %d args, only one arg", flag.NArg())
 	}
+	if c.fromExt == c.toExt {
+		return nil, fmt.Errorf("Cannot set the same format %s between -from and -to", c.fromExt)
+	}
 
 	c.dir = flag.Arg(0)
 	return c, nil

@@ -36,9 +36,9 @@ func fileWalk(dirPath, format string, f func(string) error) error {
 	err := filepath.Walk(dirPath, func(path string, info os.FileInfo, err error) error {
 		if filepath.Ext(path) == fmt.Sprintf(".%s", format) {
 			if f != nil {
-				_err := f(path)
-				if _err != nil {
-					return _err
+				err = f(path)
+				if err != nil {
+					return err
 				}
 			}
 		}

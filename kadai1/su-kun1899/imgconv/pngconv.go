@@ -10,13 +10,17 @@ import (
 	"os"
 )
 
+// ImageConv is a interface for converter of image format.
 type ImageConv interface {
 	Convert(src, dest string) error
 	IsConvertible(path string) bool
 }
 
+// PngConv is a struct for converter of png format.
 type PngConv struct{}
 
+// Convert converts src file to png format file.
+// The new file outs in dest file.
 func (PngConv) Convert(src, dest string) error {
 	reader, err := os.Open(src)
 	if err != nil {
@@ -45,6 +49,8 @@ func (PngConv) Convert(src, dest string) error {
 	return nil
 }
 
+// IsConvertible checks whether path is convertible to png format or not.
+// Currently only jpeg format file is supported.
 func (PngConv) IsConvertible(path string) bool {
 	info, err := os.Stat(path)
 	if err != nil {

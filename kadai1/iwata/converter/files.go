@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"golang.org/x/sync/errgroup"
 )
@@ -56,7 +57,7 @@ func convert(f string, c ConvertOption) error {
 	return nil
 }
 
-func distName(f string, toExt string) string {
+func distName(f, toExt string) string {
 	ext := filepath.Ext(f)
-	return fmt.Sprintf("%s.%s", f[0:len(f)-len(ext)], toExt)
+	return fmt.Sprintf("%s.%s", strings.TrimSuffix(f, ext), toExt)
 }

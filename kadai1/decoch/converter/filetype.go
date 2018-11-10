@@ -1,29 +1,51 @@
 package converter
 
-type Type int
+type ImageType int
 
 const (
-	JpgToPng Type = iota + 1
-	PngToJpg
+	Png ImageType = iota + 1
+	Jpeg
+	Gif
 )
 
-func (c Type) TargetEx() *[]string {
-	switch c {
-	case JpgToPng:
-		return &[]string{".jpeg", ".jpg"}
-	case PngToJpg:
-		return &[]string{".png"}
+var (
+	jpegExtensions = []string{"jpeg", "jpg"}
+	pngExtensions  = []string{"png"}
+	gifExtensions  = []string{"gif"}
+)
+
+func NewImageType(str string) *ImageType {
+	for _, imageType := range []ImageType{Png, Jpeg, Gif} {
+		for _, ex := range *imageType.Extensions() {
+			if ex == str {
+				return &imageType
+			}
+		}
+	}
+	return nil
+}
+
+func (i ImageType) Extensions() *[]string {
+	switch i {
+	case Png:
+		return &pngExtensions
+	case Jpeg:
+		return &jpegExtensions
+	case Gif:
+		return &gifExtensions
 	default:
 		return nil
 	}
 }
 
-func (c Type) Convert() func(src string) error {
-	switch c {
-	case JpgToPng:
-		return ToPng
-	case PngToJpg:
-		return ToJpg
+func (i ImageType) Convert() func(src string) error {
+	switch i {
+	case Png:
+		return convertToPng
+	case Jpeg:
+		return convertToJpg
+	case Gif:
+		return convertToGif
 	default:
 		return nil
 	}

@@ -2,6 +2,7 @@ package converter
 
 import (
 	"image"
+	"image/gif"
 	"image/jpeg"
 	"image/png"
 	"os"
@@ -13,7 +14,7 @@ func getName(fileName string) string {
 	return fileName[0 : len(fileName)-len(extension)]
 }
 
-func ToJpg(src string) error {
+func convertToJpg(src string) error {
 	file, err := os.Open(src)
 	if err != nil {
 		return err
@@ -37,7 +38,7 @@ func ToJpg(src string) error {
 	return nil
 }
 
-func ToPng(src string) error {
+func convertToPng(src string) error {
 	file, err := os.Open(src)
 	if err != nil {
 		return err
@@ -56,6 +57,30 @@ func ToPng(src string) error {
 	defer out.Close()
 
 	png.Encode(out, img)
+
+	os.Remove(src)
+	return nil
+}
+
+func convertToGif(src string) error {
+	file, err := os.Open(src)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+
+	img, _, err := image.Decode(file)
+	if err != nil {
+		return err
+	}
+
+	out, err := os.Create(getName(src) + ".gif")
+	if err != nil {
+		return err
+	}
+	defer out.Close()
+
+	gif.Encode(out, img, nil)
 
 	os.Remove(src)
 	return nil

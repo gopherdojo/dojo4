@@ -8,15 +8,18 @@ import (
 )
 
 type Command struct {
-	Dir         string
-	ConvertType converter.Type
+	Dir        string
+	InputType  converter.ImageType
+	OutputType converter.ImageType
 }
 
 func Parse() (*Command, error) {
 	var cmd Command
-	reverseFlag := flag.Bool("r", false, "Reverse image convert")
+	inputTypeFlag := flag.String("i", "jpg", "Input image file type.")
+	outputTypeFlag := flag.String("o", "png", "Output image file type.")
 	flag.Parse()
-	reverse := *reverseFlag
+	inputType := converter.NewImageType(*inputTypeFlag)
+	outputType := converter.NewImageType(*outputTypeFlag)
 
 	args := flag.Args()
 	if len(args) != 1 {
@@ -25,13 +28,14 @@ func Parse() (*Command, error) {
 	dirName := args[0]
 	cmd.Dir = dirName
 
-	var convertType converter.Type
-	if reverse {
-		convertType = converter.PngToJpg
-	} else {
-		convertType = converter.JpgToPng
+	if inputType == nil || len(string(*inputType)) == 0 {
+		return nil, errors.New("Invalid input image type.")
 	}
-	cmd.ConvertType = convertType
+	cmd.InputType = *inputType
 
+	if outputType == nil || len(string(*outputType)) == 0 {
+		return nil, errors.New("Invalid output image type.")
+	}
+	cmd.OutputType = *outputType
 	return &cmd, nil
 }

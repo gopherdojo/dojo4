@@ -7,12 +7,14 @@ import (
 	"github.com/decoch/dojo4/kadai1/decoch/converter"
 )
 
+// Command represents command line args.
 type Command struct {
 	Dir        string
 	InputType  converter.ImageType
 	OutputType converter.ImageType
 }
 
+// Parse parse args.
 func Parse() (*Command, error) {
 	var cmd Command
 	inputTypeFlag := flag.String("i", "jpg", "Input image file type.")

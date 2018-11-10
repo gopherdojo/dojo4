@@ -15,7 +15,7 @@ func main() {
 
 	fileNames := reader.Files(command.Dir, *command.InputType.Extensions())
 	for _, fileName := range fileNames {
-		if err := command.OutputType.Convert()(fileName); err != nil {
+		if err := command.OutputType.Converter()(fileName); err != nil {
 			log.Fatal(err)
 		}
 	}

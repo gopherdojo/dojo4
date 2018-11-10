@@ -6,6 +6,7 @@ import (
 	"strings"
 )
 
+// Files get files filter by extensions.
 func Files(dir string, extensions []string) []string {
 	files, err := ioutil.ReadDir(dir)
 	if err != nil {

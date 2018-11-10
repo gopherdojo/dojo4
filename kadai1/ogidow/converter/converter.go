@@ -3,7 +3,9 @@ package converter
 import (
 	"fmt"
 	"image"
-	_ "image/jpeg"
+	"image/gif"
+	_ "image/gif"
+	"image/jpeg"
 	"image/png"
 	"os"
 	"path/filepath"
@@ -57,6 +59,10 @@ func Convert(srcPath string, destExtention string) error {
 	switch destExtention {
 	case ".png":
 		err = png.Encode(dest, img)
+	case ".jpg":
+		err = jpeg.Encode(dest, img, nil)
+	case ".gif":
+		err = gif.Encode(dest, img, nil)
 	}
 
 	if err != nil {

@@ -12,6 +12,10 @@ func (argument *Argument) InputExtensions() []string {
 	switch argument.InputFormat {
 	case "jpg", "jpeg":
 		return []string{".jpg", ".jpeg"}
+	case "png":
+		return []string{".png"}
+	case "gif":
+		return []string{".gif"}
 	default:
 		return []string{}
 	}
@@ -20,8 +24,12 @@ func (argument *Argument) InputExtensions() []string {
 // OutputExtension retrun output extentions
 func (argument *Argument) OutputExtension() string {
 	switch argument.OutputFormat {
+	case "jpg", "jpeg":
+		return ".jpg"
 	case "png":
 		return ".png"
+	case "gif":
+		return ".gif"
 	default:
 		return ""
 	}

@@ -27,27 +27,8 @@ type ImageConverterError struct {
 	code int
 }
 
-// Run converts the Image Files.
-func (ic *ImageConverter) Run() error {
-
-	// 初期化
-	ic.flagSet()
-
-	switch mode := ic.mode; mode {
-	case "d":
-		if err := ic.convertDir(); err != nil {
-			return err
-		}
-	case "f":
-		if err := ic.convertFile(); err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
-// flagSet Funtion sets params inputted in cmd line.
-func (ic *ImageConverter) flagSet() {
+// Init Funtion sets params inputted in cmd line.
+func (ic *ImageConverter) Init() {
 
 	// define option command
 	flag.StringVar(&ic.srcExt, "src", "jpg", "変換元のファイルフォーマット [ jpeg, jpg, png ]")
@@ -61,6 +42,22 @@ func (ic *ImageConverter) flagSet() {
 	ic.srcName = flag.Arg(0)
 
 	return
+}
+
+// Run converts the Image Files.
+func (ic *ImageConverter) Run() error {
+
+	switch mode := ic.mode; mode {
+	case "d":
+		if err := ic.convertDir(); err != nil {
+			return err
+		}
+	case "f":
+		if err := ic.convertFile(); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 // Error Function outputs error message related to ImageConverter

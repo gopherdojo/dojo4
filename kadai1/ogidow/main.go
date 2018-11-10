@@ -4,7 +4,7 @@ import (
 	"flag"
 	"fmt"
 
-	"./converter"
+	"github.com/ogidow/dojo4/kadai1/ogidow/converter"
 )
 
 func main() {

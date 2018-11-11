@@ -1,3 +1,4 @@
+// Package myconvert is a command to convert image extension
 package main
 
 import (

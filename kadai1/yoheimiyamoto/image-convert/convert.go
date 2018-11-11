@@ -33,14 +33,16 @@ func Converts(dirPath, srcFormat, distFormat string) error {
 // format引数で指定したフォーマットのファイルを探索
 // 取得したファイルのパスを引数として 引数のfuncを実行
 func fileWalk(dirPath, format string, f func(string) error) error {
+	if f == nil {
+		panic("引数fは必須です")
+	}
 	err := filepath.Walk(dirPath, func(path string, info os.FileInfo, err error) error {
-		if filepath.Ext(path) == fmt.Sprintf(".%s", format) {
-			if f != nil {
-				err = f(path)
-				if err != nil {
-					return err
-				}
-			}
+		if filepath.Ext(path) != fmt.Sprintf(".%s", format) {
+			return nil
+		}
+		err = f(path)
+		if err != nil {
+			return err
 		}
 		return nil
 	})

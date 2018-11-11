@@ -18,10 +18,12 @@ type ConvImg struct {
 	Path string
 }
 
+// NewConvert is constructor
 func NewConvert(from string, to string, path string) *ConvImg {
 	return &ConvImg{From: from, To: to, Path: path}
 }
 
+// Convert images from one extension to another
 func (c *ConvImg) Convert() error {
 	files, err := findImages(c.Path, c.From, log.New(os.Stdout, "convimg",1))
 	if err != nil {

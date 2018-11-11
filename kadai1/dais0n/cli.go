@@ -19,17 +19,18 @@ type CLI struct {
 	outStream, errStream io.Writer
 }
 
+// Run command
 func (c *CLI) Run(args []string) int {
 	// Command Options
 	var from string
 	var to string
 	var path string
-	flags := flag.NewFlagSet("c", flag.ContinueOnError)
+	flags := flag.NewFlagSet("conv", flag.ContinueOnError)
 	flags.SetOutput(c.errStream)
 
 	flags.StringVar(&from,"f", "jpg", "from extension")
 	flags.StringVar(&to, "t", "png", "to extension")
-	flags.StringVar(&path, "p", "./images", "path")
+	flags.StringVar(&path, "p", "./images", "images dir path")
 	if err := flags.Parse(args[1:]); err != nil {
 		return ExitCodeError
 	}

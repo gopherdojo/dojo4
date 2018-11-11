@@ -26,12 +26,12 @@
 
 ## ビルド
  ```
- $ go build -o conv main.go
+ $ go build -o bin/convimg main.go
  ```
 
  ## コマンド
  ```
- $.conv [options] [directories]
+ $./bin/convimg [options] [directories]
  ```
 
  ### オプション

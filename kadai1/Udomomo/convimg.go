@@ -3,16 +3,11 @@ package main
 import (
 	"image"
 	_ "image/jpeg"
-	"image/png"
 	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
 )
-
-//再帰探索する
-//ユーザ定義型を作る: fromとtoをstructにまとめ、changeExtメソッドを関連づけてみる
-//探索と変換をそれぞれ別パッケージにした方がよいかも
 
 // rootDirにあるファイルの一覧を探索。
 // ディレクトリがあれば再帰処理する。
@@ -35,7 +30,7 @@ func SearchFile(rootDir, from, to string) {
 			continue
 		}
 
-		convFileToPng(path, newPath)
+		println(convFile(path, newPath))
 
 	}
 }
@@ -56,8 +51,7 @@ func generateNewExt(path, from, to string) (willConv bool, newPath string) {
 	return true, path[:len(path)-len(ext)] + to
 }
 
-func convFileToPng(path, newPath string) {
-	println(path)
+func convFile(path, newPath string) string {
 	file, err := os.Open(path)
 	if err != nil {
 		print("open failed")
@@ -65,11 +59,10 @@ func convFileToPng(path, newPath string) {
 	}
 	defer file.Close()
 
-	decoded, _, err := image.Decode(file)
+	decoded, format, err := image.Decode(file)
 	if err != nil {
-		print("decode failed")
-		log.Fatal(err)
 	}
+	println(format)
 
 	out, err := os.Create(newPath)
 	if err != nil {
@@ -78,10 +71,31 @@ func convFileToPng(path, newPath string) {
 	}
 	defer out.Close()
 
-	if err := png.Encode(out, decoded); err != nil {
+	var c Converter
+	switch format {
+	case "jpeg", "jpg":
+		{
+			c = &jpgConverter{out, decoded}
+		}
+	case "png":
+		{
+			c = &pngConverter{out, decoded}
+		}
+	case "gif":
+		{
+			c = &gifConverter{out, decoded}
+		}
+	default:
+		{
+			log.Fatal("Can't generate converter: illegal format")
+		}
+	}
+
+	if err := c.convimg(); err != nil {
 		print("encode failed")
 		log.Fatal(err)
 	}
 
 	os.Remove(path)
+	return newPath
 }

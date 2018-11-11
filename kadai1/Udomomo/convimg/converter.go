@@ -1,4 +1,4 @@
-package main
+package convimg
 
 import (
 	"image"

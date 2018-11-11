@@ -8,7 +8,7 @@ import (
 	"path/filepath"
 )
 
-//SearchFile :rootDirにあるファイルの一覧を探索。ディレクトリがあれば再帰処理する。
+//SearchFile : rootDirにあるファイルの一覧を探索。ディレクトリがあれば再帰処理する。
 func SearchFile(rootDir, from, to string) {
 	files, err := ioutil.ReadDir(rootDir)
 	if err != nil {
@@ -32,6 +32,7 @@ func SearchFile(rootDir, from, to string) {
 	}
 }
 
+//generateNewExt : 変換が必要な場合、変換後のパスを生成して返す
 func generateNewExt(path, from, to string) (willConv bool, newPath string) {
 	ext := filepath.Ext(path)
 
@@ -48,6 +49,7 @@ func generateNewExt(path, from, to string) (willConv bool, newPath string) {
 	return true, path[:len(path)-len(ext)] + to
 }
 
+//convFile : 変換を実行する
 func convFile(path, newPath string) string {
 	file, err := os.Open(path)
 	if err != nil {

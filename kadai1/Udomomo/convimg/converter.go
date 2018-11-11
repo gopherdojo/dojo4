@@ -27,6 +27,7 @@ type gifConverter struct {
 	img  image.Image
 }
 
+//convert : ファイルの形式に合わせて、変換を行うメソッドを呼び分ける
 func convert(c Converter) error {
 	return c.convimg()
 }

@@ -62,7 +62,6 @@ func convFile(path, newPath string) string {
 	decoded, format, err := image.Decode(file)
 	if err != nil {
 	}
-	println(format)
 
 	out, err := os.Create(newPath)
 	if err != nil {

@@ -2,9 +2,10 @@ package main
 
 import (
 	"flag"
-	"log"
+	"fmt"
+	"os"
 
-	"convimg"
+	"github.com/Udomomo/dojo4/kadai1/Udomomo/convimg"
 )
 
 func main() {
@@ -16,15 +17,16 @@ func main() {
 		t string
 	)
 
-	flag.StringVar(&f, "str", "jpg", "format before conversion (default: jpg)")
-	flag.StringVar(&t, "str", "jpg", "format after conversion (default: png)")
+	flag.StringVar(&f, "f", "jpg", "format before conversion")
+	flag.StringVar(&t, "t", "png", "format after conversion")
 
 	flag.Parse()
 
 	path := flag.Arg(0)
 
-	if contains(suffix, f) != false || contains(suffix, t) != false {
-		log.Fatal("Invalid suffix: %s, %s", f, t)
+	if contains(suffix, f) == false || contains(suffix, t) == false {
+		fmt.Printf("Invalid suffix: %s, %s", f, t)
+		os.Exit(1)
 	}
 
 	convimg.SearchFile(path, "."+f, "."+t)

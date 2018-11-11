@@ -10,6 +10,12 @@ import (
 	"path/filepath"
 )
 
+type converter struct {
+	Path string
+	From string
+	To   string
+}
+
 // Convert images's extension
 func Convert(dir, from, to string) {
 	err := convertFiles(dir, from, to)
@@ -27,8 +33,12 @@ func convertFiles(dir, from, to string) error {
 			return nil
 		}
 		if filepath.Ext(path) == "."+from {
-			println(path)
-			return convertFile(path, from, to)
+			converter := converter{
+				Path: path,
+				From: from,
+				To:   to,
+			}
+			return converter.convertFile()
 		}
 		return nil
 	})
@@ -36,8 +46,8 @@ func convertFiles(dir, from, to string) error {
 	return err
 }
 
-func convertFile(path, from, to string) error {
-	file, err := os.Open(path)
+func (conv *converter) convertFile() error {
+	file, err := os.Open(conv.Path)
 	defer file.Close()
 	if err != nil {
 		return err
@@ -48,13 +58,13 @@ func convertFile(path, from, to string) error {
 		return err
 	}
 
-	newFile, err := os.Create(newFilePath(to, path))
+	newFile, err := os.Create(newFilePath(conv.To, conv.Path))
 	defer newFile.Close()
 	if err != nil {
 		return err
 	}
 
-	switch to {
+	switch conv.To {
 	case "gif":
 		return gif.Encode(newFile, img, nil)
 	case "jpeg", "jpg":
@@ -62,7 +72,7 @@ func convertFile(path, from, to string) error {
 	case "png":
 		return png.Encode(newFile, img)
 	default:
-		return fmt.Errorf("exension is invalid: %s", to)
+		return fmt.Errorf("exension is invalid: %s", conv.To)
 	}
 }
 

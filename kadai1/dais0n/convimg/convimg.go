@@ -13,8 +13,11 @@ import (
 )
 
 type ConvImg struct {
+	// before image extension
 	From string
+	// after image extension
 	To string
+	// image dir path
 	Path string
 }
 

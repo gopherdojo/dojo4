@@ -1,0 +1,24 @@
+PACKAGE DOCUMENTATION
+
+package convimg
+    import "./convimg/"
+
+
+TYPES
+
+type ConvImg struct {
+    // before image extension
+    From string
+    // after image extension
+    To string
+    // image dir path
+    Path string
+}
+
+func NewConvert(from string, to string, path string) *ConvImg
+    NewConvert is constructor
+
+func (c *ConvImg) Convert() error
+    Convert images from one extension to another
+
+

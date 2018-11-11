@@ -2,16 +2,13 @@ package convimg
 
 import (
 	"image"
-	_ "image/jpeg"
 	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
 )
 
-// rootDirにあるファイルの一覧を探索。
-// ディレクトリがあれば再帰処理する。
-
+//SearchFile :rootDirにあるファイルの一覧を探索。ディレクトリがあれば再帰処理する。
 func SearchFile(rootDir, from, to string) {
 	files, err := ioutil.ReadDir(rootDir)
 	if err != nil {
@@ -19,7 +16,7 @@ func SearchFile(rootDir, from, to string) {
 	}
 
 	for _, file := range files {
-		path := rootDir + "/" + file.Name()
+		path := filepath.Join(rootDir, file.Name())
 		if file.IsDir() {
 			SearchFile(path, from, to)
 			continue

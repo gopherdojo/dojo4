@@ -1,7 +1,6 @@
 package imgconv
 
 import (
-	"errors"
 	"fmt"
 	"image"
 	_ "image/gif"
@@ -32,7 +31,7 @@ func (PngConv) Convert(src, dest string) error {
 	if err != nil {
 		return err
 	} else if format != "jpeg" {
-		return errors.New(fmt.Sprintf("format is not jpeg. src = %v", src))
+		return fmt.Errorf("format is not jpeg. src = %v", src)
 	}
 
 	writer, err := os.Create(dest)

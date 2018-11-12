@@ -30,12 +30,16 @@ func ConvertFiles(files []string, c ConvertOption) error {
 	return nil
 }
 
-func convert(f string, c ConvertOption) error {
+func convert(f string, c ConvertOption) (err error) {
 	src, err := os.Open(f)
 	if err != nil {
 		return fmt.Errorf("Failed to open %s: %s", f, err)
 	}
-	defer src.Close()
+	defer func() {
+		if cerr := src.Close(); cerr != nil && err == nil {
+			err = cerr
+		}
+	}()
 
 	cv, err := resolveConverter(src, c)
 	if err != nil {
@@ -47,7 +51,11 @@ func convert(f string, c ConvertOption) error {
 	if err != nil {
 		return fmt.Errorf("Failed to create a %s: %s", dist, err)
 	}
-	defer df.Close()
+	defer func() {
+		if cerr := df.Close(); cerr != nil && err == nil {
+			err = cerr
+		}
+	}()
 
 	if err := cv.Convert(df); err != nil {
 		return fmt.Errorf("Failed to convert %s to %s: %s", f, dist, err)

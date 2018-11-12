@@ -27,6 +27,8 @@ func resolveConverter(src io.Reader, opt ConvertOption) (Converter, error) {
 		c = &pngConverter{img}
 	case "gif":
 		c = &gifConverter{img}
+	default:
+		return nil, fmt.Errorf("%s is not supported format", opt.ToFormat())
 	}
 
 	return c, nil

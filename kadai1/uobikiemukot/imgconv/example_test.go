@@ -12,16 +12,8 @@ func Example() {
 		GIFOptions:   gif.Options{NumColors: 256},
 	}
 
-	imgs, err := c.SearchImages("test/subdir")
+	err := c.Converter("test/subdir")
 	if err != nil {
 		log.Fatal(err)
-	}
-
-	for _, img := range imgs {
-		log.Printf("converting %s...\n", img)
-		err := c.ConvertImage(img)
-		if err != nil {
-			log.Println(err)
-		}
 	}
 }

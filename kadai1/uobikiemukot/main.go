@@ -2,9 +2,7 @@ package main
 
 import (
 	"flag"
-	"fmt"
 	"log"
-	"os"
 	"path/filepath"
 
 	"github.com/gopherdojo/dojo2/kadai1/uobikiemukot/imgconv"
@@ -33,16 +31,8 @@ func main() {
 		log.Fatal(err)
 	}
 
-	files, err := c.SearchImages(root)
+	err = c.Converter(root)
 	if err != nil {
-		log.Fatalf("SearchImages() failed: %s", err)
-	}
-
-	for _, f := range files {
-		fmt.Fprintf(os.Stderr, "converting...: %s\n", f)
-		err = c.ConvertImage(f)
-		if err != nil {
-			log.Printf("ConvertImage() failed: %s", err)
-		}
+		log.Fatal(err)
 	}
 }

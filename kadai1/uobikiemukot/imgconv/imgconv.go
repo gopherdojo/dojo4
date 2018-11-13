@@ -6,7 +6,7 @@ import (
 	"image/gif"
 	"image/jpeg"
 	"image/png"
-	"io"
+	"log"
 	"os"
 	"path/filepath"
 	"strings"
@@ -20,13 +20,13 @@ type Config struct {
 	GIFOptions   gif.Options // Options for gif.Encode()
 }
 
-// SearchImages pass a root directory as an argument.
-// return all image files included in root directory and sub-directory
-func (c *Config) SearchImages(root string) ([]string, error) {
+// search pass a root directory as an argument.
+// return all image files included in root directory and sub-directory.
+func search(root, suffix string) ([]string, error) {
 	var list []string
 
 	f := func(path string, info os.FileInfo, err error) error {
-		if info.Mode().IsRegular() && !info.IsDir() && strings.HasSuffix(path, c.InputFormat) {
+		if info.Mode().IsRegular() && !info.IsDir() && strings.HasSuffix(path, suffix) {
 			list = append(list, path)
 		}
 		return nil
@@ -40,44 +40,63 @@ func (c *Config) SearchImages(root string) ([]string, error) {
 	return list, nil
 }
 
-func (c *Config) encode(w io.Writer, m image.Image) error {
-	var err error
+// encode encode image and write to specified path.
+func (c *Config) encode(path string, img image.Image) error {
+	output, err := os.Create(path)
+	if err != nil {
+		return err
+	}
+	defer output.Close()
 
 	switch c.OutputFormat {
 	case "png":
-		err = png.Encode(w, m)
+		err = png.Encode(output, img)
 	case "jpg":
-		err = jpeg.Encode(w, m, &c.JPEGOptions)
+		err = jpeg.Encode(output, img, &c.JPEGOptions)
 	case "gif":
-		err = gif.Encode(w, m, &c.GIFOptions)
+		err = gif.Encode(output, img, &c.GIFOptions)
+	}
+	if err != nil {
+		return err
 	}
 
-	return err
+	return nil
 }
 
-// ConvertImage convert image file (from Config.InputFormat to Config.OutputFormat).
-func (c *Config) ConvertImage(ipath string) error {
-	in, err := os.Open(ipath)
+// decode decode input image by specified path.
+func decode(path string) (image.Image, error) {
+	input, err := os.Open(path)
 	if err != nil {
-		return fmt.Errorf("%s (path: %s)", err, ipath)
+		return nil, err
 	}
-	defer in.Close()
+	defer input.Close()
 
-	img, _, err := image.Decode(in)
+	img, _, err := image.Decode(input)
 	if err != nil {
-		return fmt.Errorf("%s (path: %s)", err, ipath)
+		return nil, err
 	}
 
-	opath := strings.TrimSuffix(ipath, c.InputFormat) + c.OutputFormat
-	out, err := os.Create(opath)
-	if err != nil {
-		return fmt.Errorf("%s (path: %s)", err, opath)
-	}
-	defer out.Close()
+	return img, nil
+}
 
-	err = c.encode(out, img)
+// Converter search images from root directory and convert to specified format.
+func (c *Config) Converter(root string) error {
+	list, err := search(root, c.InputFormat)
 	if err != nil {
-		return fmt.Errorf("%s (path: %s)", err, opath)
+		return fmt.Errorf("search(%s): %s", root, err)
+	}
+
+	for _, in := range list {
+		log.Printf("converting... %s\n", in)
+		img, err := decode(in)
+		if err != nil {
+			return fmt.Errorf("decode(%s): %s", in, err)
+		}
+		out := strings.TrimSuffix(in, c.InputFormat) + c.OutputFormat
+		err = c.encode(out, img)
+		if err != nil {
+			return fmt.Errorf("encode(%s): %s", in, err)
+		}
 	}
 
 	return nil

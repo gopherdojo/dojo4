@@ -25,40 +25,16 @@ type Config struct {
 func (c *Config) SearchImages(root string) ([]string, error) {
 	var list []string
 
-	fp, err := os.Open(root)
-	if err != nil {
-		return nil, fmt.Errorf("%s (path: %s)", err, root)
-	}
-	defer fp.Close()
-
-	info, err := fp.Stat()
-	if err != nil {
-		return nil, fmt.Errorf("%s (path: %s)", err, root)
-	}
-
-	if !info.IsDir() {
-		return nil, fmt.Errorf("%s is not directory", root)
-	}
-
-	infos, err := fp.Readdir(0)
-	if err != nil {
-		return nil, fmt.Errorf("%s (path: %s)", err, root)
-	}
-
-	for _, info := range infos {
-		path := filepath.Join(root, info.Name())
-		if info.IsDir() {
-			newList, err := c.SearchImages(path)
-			if err != nil {
-				fmt.Fprintf(os.Stderr, "SearchImages() failed: %s", err)
-			} else {
-				list = append(list, newList...)
-			}
-		} else if info.Mode().IsRegular() {
-			if strings.HasSuffix(path, c.InputFormat) {
-				list = append(list, path)
-			}
+	f := func(path string, info os.FileInfo, err error) error {
+		if info.Mode().IsRegular() && !info.IsDir() && strings.HasSuffix(path, c.InputFormat) {
+			list = append(list, path)
 		}
+		return nil
+	}
+
+	err := filepath.Walk(root, f)
+	if err != nil {
+		return nil, fmt.Errorf("%s (path: %s)", err, root)
 	}
 
 	return list, nil

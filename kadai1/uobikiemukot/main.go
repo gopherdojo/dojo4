@@ -23,17 +23,16 @@ func main() {
 		log.Fatalf("input format(%s) == output format(%s): nothing to do\n", *ifmt, *ofmt)
 	}
 
-	wd, err := os.Getwd()
-	if err != nil {
-		log.Fatal(err)
-	}
-
 	c := imgconv.Config{
 		InputFormat: *ifmt,
 		OutputFormat: *ofmt,
 	}
 
-	root := filepath.Join(wd, flag.Arg(0))
+	root, err := filepath.Abs(flag.Arg(0))
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	files, err := c.SearchImages(root)
 	if err != nil {
 		log.Fatalf("SearchImages() failed: %s", err)

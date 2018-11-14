@@ -42,5 +42,5 @@ $ make build
 generate godoc.
 
 ~~~
-$ make build
+$ make doc
 ~~~

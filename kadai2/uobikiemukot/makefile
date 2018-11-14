@@ -19,11 +19,15 @@ DST  = convert
 SRC  = main.go
 TESTFILES = 
 
-all: lint build test doc
+all: lint build test doc coverage
 
 lint: $(SRC)
 	$(GOVET) ./...
 	$(GOLINT) ./...
+
+coverage:
+	$(GOTEST) $(TESTOPT) -coverprofile cover.prof ./...
+	$(GOTOOL) cover -html=cover.prof -o cover.html
 
 test: $(SRC)
 	$(GOTEST) $(TESTOPT) ./imgconv
@@ -37,4 +41,4 @@ doc:
 	$(GODOC) -ex ./imgconv > imgconv.doc
 
 clean:
-	rm -f $(DST) *.doc
+	rm -f $(DST) *.doc *.prof

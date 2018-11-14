@@ -44,3 +44,11 @@ generate godoc.
 ~~~
 $ make doc
 ~~~
+
+## coverage
+
+report coverage.
+
+~~~
+$ make coverage
+~~~

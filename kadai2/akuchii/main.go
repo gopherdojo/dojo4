@@ -7,7 +7,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/gopherdojo/dojo4/kadai1/akuchii/converter"
+	"github.com/gopherdojo/dojo4/kadai2/akuchii/converter"
 )
 
 // extension before convert
@@ -47,7 +47,13 @@ func main() {
 	fmt.Printf("start to convert ext before: %s, after: %s\n", beforeExt, afterExt)
 	err = filepath.Walk(srcDir, func(path string, info os.FileInfo, err error) error {
 		if filepath.Ext(path) == "."+beforeExt {
-			err = converter.Execute(path, dstDir, afterExt)
+			conv, err := converter.NewConverter(path, dstDir, afterExt)
+			if err != nil {
+				fmt.Println(err)
+				os.Exit(ExitCodeError)
+			}
+
+			err = conv.Execute()
 			if err != nil {
 				fmt.Println(err)
 				os.Exit(ExitCodeError)

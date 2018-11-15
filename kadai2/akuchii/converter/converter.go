@@ -1,4 +1,4 @@
-// Package converter convert image extension to target extension
+// Package converter converts image extension to target extension
 package converter
 
 import (
@@ -7,6 +7,7 @@ import (
 	"image/gif"
 	"image/jpeg"
 	"image/png"
+	"io"
 	"os"
 	"path/filepath"
 )
@@ -18,59 +19,141 @@ var supportedExts = map[string]bool{
 	"gif":  true,
 }
 
-// Execute read file from path, convert file extension to afterExt and save it in outDir
-func Execute(path string, outDir string, afterExt string) error {
-	if _, ok := supportedExts[afterExt]; !ok {
-		return fmt.Errorf("%s is not supported ext", afterExt)
+// Encoder encodes image
+type Encoder interface {
+	Encode(io.Writer, image.Image) error
+}
+
+// Converter converts image to other format of afterExt
+type Converter struct {
+	path     string
+	outDir   string
+	afterExt string
+	encoder  Encoder
+}
+
+// JpegEncoder encodes image to jpeg format
+type JpegEncoder struct {
+}
+
+// PngEncoder encodes image to png format
+type PngEncoder struct {
+}
+
+// GifEncoder encodes image to gif format
+type GifEncoder struct {
+}
+
+// Encode encodes to jpeg
+func (c *JpegEncoder) Encode(w io.Writer, img image.Image) error {
+	return jpeg.Encode(w, img, nil)
+}
+
+// Encode encodes to png
+func (c *PngEncoder) Encode(w io.Writer, img image.Image) error {
+	return png.Encode(w, img)
+}
+
+// Encode encodes to gif
+func (c *GifEncoder) Encode(w io.Writer, img image.Image) error {
+	return gif.Encode(w, img, nil)
+}
+
+// Encode encodes to specific format
+func (c *Converter) Encode(w io.Writer, img image.Image) error {
+	return c.encoder.Encode(w, img)
+}
+
+// Decode decodes input image
+func (c *Converter) Decode(r io.Reader) (image.Image, error) {
+	img, _, err := image.Decode(r)
+	return img, err
+}
+
+// NewConverter creates new converter instance
+func NewConverter(path, outDir, afterExt string) (*Converter, error) {
+	var encoder Encoder
+	switch afterExt {
+	case "jpg", "jpeg":
+		encoder = &JpegEncoder{}
+	case "png":
+		encoder = &PngEncoder{}
+	case "gif":
+		encoder = &GifEncoder{}
+	}
+	return &Converter{path, outDir, afterExt, encoder}, nil
+}
+
+// Execute reads file from path, convert file extension to afterExt and save it in outDir
+func (c *Converter) Execute() error {
+	if _, ok := supportedExts[c.afterExt]; !ok {
+		return fmt.Errorf("%s is not supported ext", c.afterExt)
 	}
 
-	in, err := os.Open(path)
+	in, err := os.Open(c.path)
 	if err != nil {
 		return err
 	}
+
 	defer in.Close()
 
-	img, _, err := image.Decode(in)
-
+	img, err := c.Decode(in)
 	if err != nil {
 		return err
 	}
 
-	dstDir := filepath.Join(outDir, filepath.Dir(path))
-	err = createDir(dstDir)
+	err = c.createDstDir()
 	if err != nil {
 		return err
 	}
 
-	filenameWithoutExt := filepath.Base(path[:len(path)-len(filepath.Ext(path))])
-	dstFile := filepath.Join(dstDir, filenameWithoutExt) + "." + afterExt
-	out, err := os.Create(dstFile)
+	dstPath, err := c.getDstPath()
+	if err != nil {
+		return err
+	}
+
+	out, err := os.Create(dstPath)
 	if err != nil {
 		return err
 	}
 	defer out.Close()
 
-	switch afterExt {
-	case "jpg", "jpeg":
-		err = jpeg.Encode(out, img, nil)
-	case "png":
-		err = png.Encode(out, img)
-	case "gif":
-		err = gif.Encode(out, img, nil)
-	}
+	err = c.Encode(out, img)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-// createDir creates directory from path if it does not exist
-func createDir(path string) error {
-	if _, err := os.Stat(path); os.IsNotExist(err) {
-		err = os.MkdirAll(path, os.ModePerm)
+func (c *Converter) getDstDir() (string, error) {
+	srcAbs, err := filepath.Abs(c.path)
+	if err != nil {
+		return "", err
+	}
+	return filepath.Join(filepath.Dir(srcAbs), c.outDir), nil
+}
+
+func (c *Converter) createDstDir() error {
+	dstDir, err := c.getDstDir()
+	if err != nil {
+		return err
+	}
+
+	if _, err := os.Stat(dstDir); os.IsNotExist(err) {
+		err = os.MkdirAll(dstDir, os.ModePerm)
 		if err != nil {
 			return err
 		}
 	}
 	return nil
+}
+
+func (c *Converter) getDstPath() (string, error) {
+	filenameWithoutExt := filepath.Base(c.path[:len(c.path)-len(filepath.Ext(c.path))])
+	dstDir, err := c.getDstDir()
+	if err != nil {
+		return "", err
+	}
+	dstPath := filepath.Join(dstDir, filenameWithoutExt) + "." + c.afterExt
+	return dstPath, nil
 }

@@ -4,7 +4,6 @@ import (
 	"flag"
 	"fmt"
 	"io"
-	"os"
 )
 
 // CmdConfig is a configuration
@@ -47,7 +46,7 @@ func (c *Cmd) Parse(args []string) (*CmdConfig, error) {
 	flags.StringVar(&conf.toExt, "to", "png", "Convert to image format")
 
 	flags.Usage = func() {
-		fmt.Fprintf(os.Stderr, `
+		fmt.Fprintf(c.stde, `
 Usage of %s:
    %s [OPTIONS] DIR
 OPTIONS

@@ -55,7 +55,9 @@ func TestCmd_Parse(t *testing.T) {
 		{"with invalid options", "-hoge -fuga", "flag provided but not defined", nil, errors.New("Failed to paser args")},
 	}
 	for _, tt := range tests {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
 			errStream := new(bytes.Buffer)
 			c := cmdparser.NewCmd(errStream)
 			got, err := c.Parse(cmdArgs(tt.cmd))

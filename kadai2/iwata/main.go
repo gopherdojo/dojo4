@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
+	"os"
 
 	"github.com/gopherdojo/dojo4/kadai2/iwata/cmdparser"
 	"github.com/gopherdojo/dojo4/kadai2/iwata/converter"
@@ -10,7 +11,8 @@ import (
 )
 
 func main() {
-	c, err := cmdparser.Parse()
+	cmd := cmdparser.NewCmd(os.Stderr)
+	c, err := cmd.Parse(os.Args)
 	if err != nil {
 		log.Fatal(err)
 	}

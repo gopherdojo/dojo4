@@ -3,6 +3,7 @@ package cmdparser
 import (
 	"flag"
 	"fmt"
+	"io"
 	"os"
 )
 
@@ -28,30 +29,43 @@ func (c *CmdConfig) ToFormat() string {
 	return c.toExt
 }
 
-// Parse is method to parse from command args
-func Parse() (*CmdConfig, error) {
-	c := &CmdConfig{}
-	flag.StringVar(&c.fromExt, "from", "jpg", "Convert from image format")
-	flag.StringVar(&c.toExt, "to", "png", "Convert to image format")
+// Cmd is a struct to parse arguments
+type Cmd struct {
+	stde io.Writer
+}
 
-	flag.Usage = func() {
+func NewCmd(stde io.Writer) *Cmd {
+	return &Cmd{stde}
+}
+
+// Parse is method to parse from command args
+func (c *Cmd) Parse(args []string) (*CmdConfig, error) {
+	conf := &CmdConfig{}
+	flags := flag.NewFlagSet("imgconv", flag.ContinueOnError)
+	flags.SetOutput(c.stde)
+	flags.StringVar(&conf.fromExt, "from", "jpg", "Convert from image format")
+	flags.StringVar(&conf.toExt, "to", "png", "Convert to image format")
+
+	flags.Usage = func() {
 		fmt.Fprintf(os.Stderr, `
 Usage of %s:
    %s [OPTIONS] DIR
-oPTIONS
-`, os.Args[0], os.Args[0])
-		flag.PrintDefaults()
+OPTIONS
+`, args[0], args[0])
+		flags.PrintDefaults()
 	}
 
-	flag.Parse()
+	if err := flags.Parse(args[1:]); err != nil {
+		return nil, fmt.Errorf("Failed to paser args: %s", err)
+	}
 
-	if flag.NArg() != 1 {
+	if flags.NArg() != 1 {
 		return nil, fmt.Errorf("Not support %d args, only one arg", flag.NArg())
 	}
-	if c.fromExt == c.toExt {
-		return nil, fmt.Errorf("Cannot set the same format %s between -from and -to", c.fromExt)
+	if conf.fromExt == conf.toExt {
+		return nil, fmt.Errorf("Cannot set the same format %s between -from and -to", conf.fromExt)
 	}
 
-	c.dir = flag.Arg(0)
-	return c, nil
+	conf.dir = flags.Arg(0)
+	return conf, nil
 }

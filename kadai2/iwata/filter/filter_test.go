@@ -26,7 +26,6 @@ func newMockOption(dir, format string) filter.Option {
 }
 
 func TestFiles(t *testing.T) {
-	t.Parallel()
 	var goLogoDir string = "../test/fixtures/images/Go-Logo"
 
 	type args struct {
@@ -72,7 +71,9 @@ func TestFiles(t *testing.T) {
 		}, false},
 	}
 	for _, tt := range tests {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
 			got, err := filter.Files(tt.args.c)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("filter.Files() error = %v, wantErr %v", err, tt.wantErr)

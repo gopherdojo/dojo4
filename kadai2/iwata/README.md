@@ -1,25 +1,23 @@
-# 課題 画像変換コマンドの実装
+## 課題1 io.Readerとio.Writerについて
+
+## 課題2 テストを書いてみよう
 
 ## Build
 
 ```
-env GO111MODULE=on go build -o imgconv
+env GO111MODULE=on make
+./imgconv -h
 `````
 
-## Usage
+## Test
 
 ```
-./imgconv -h
+make test
 ```
 
-## Command sample
+## Coverage
 
 ```
-./imgconv -from jpg -to gif ./images
-```
-
-## Godoc
-
-```
-go doc
+make cov
+open cover.html
 ```

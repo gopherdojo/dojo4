@@ -15,6 +15,30 @@ func cmdArgs(cmd string) []string {
 	return strings.Split(fmt.Sprintf("%s %s", "imgconv", cmd), " ")
 }
 
+func TestCmdConfig_SrcDir(t *testing.T) {
+	dir := "/hoge"
+	c := cmdparser.NewCmdConfig(dir, "jpg", "png")
+	if c.SrcDir() != dir {
+		t.Errorf("CmdConfig.SrcDir() = %s, want %s", c.SrcDir(), dir)
+	}
+}
+
+func TestCmdConfig_FromFormat(t *testing.T) {
+	from := "jpg"
+	c := cmdparser.NewCmdConfig("./", from, "png")
+	if c.FromFormat() != from {
+		t.Errorf("CmdConfig.FromFormat() = %s, want %s", c.FromFormat(), from)
+	}
+}
+
+func TestCmdConfig_ToFormat(t *testing.T) {
+	to := "gif"
+	c := cmdparser.NewCmdConfig("./", "jpg", to)
+	if c.ToFormat() != to {
+		t.Errorf("CmdConfig.ToFormat() = %s, want %s", c.ToFormat(), to)
+	}
+}
+
 func TestCmd_Parse(t *testing.T) {
 	tests := []struct {
 		name         string

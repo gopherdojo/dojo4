@@ -3,7 +3,8 @@ package converter
 type ImageType int
 
 const (
-	Png ImageType = iota + 1
+	Unknown ImageType = iota
+	Png
 	Jpeg
 	Gif
 )
@@ -27,8 +28,8 @@ func NewImageType(str string) *ImageType {
 }
 
 // Extensions get extensions of type.
-func (i ImageType) Extensions() *[]string {
-	switch i {
+func (i *ImageType) Extensions() *[]string {
+	switch *i {
 	case Png:
 		return &pngExtensions
 	case Jpeg:

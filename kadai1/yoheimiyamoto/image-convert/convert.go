@@ -95,5 +95,5 @@ func convert(img image.Image, dest, format string) error {
 
 // ファイルの拡張子を変更
 func changeExt(path, ext string) string {
-	return string(path[:len(path)-len(ext)]) + ext
+	return string(path[:len(path)-len(filepath.Ext(path))+1]) + ext
 }

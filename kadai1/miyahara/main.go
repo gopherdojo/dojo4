@@ -5,6 +5,6 @@ import (
 )
 
 func main() {
-	converter := converter.NewConverter()
+	converter := converter.New()
 	converter.Run()
 }

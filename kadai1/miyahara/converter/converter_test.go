@@ -14,12 +14,12 @@ func TestConverter_Encode(t *testing.T) {
 		outputFileName string
 	}{
 		"jpg to png": {
-			converter:      Converter{Out: "png"},
+			converter:      Converter{out: "png"},
 			inputFileName:  "TestData/jpg/testData.jpg",
 			outputFileName: "TestData/jpg/testOutput.png",
 		},
 		"png to jpeg": {
-			converter:      Converter{Out: "jpeg"},
+			converter:      Converter{out: "jpeg"},
 			inputFileName:  "TestData/png/testData.png",
 			outputFileName: "TestData/png/testOutput.jpg",
 		},
@@ -46,7 +46,7 @@ func TestConverter_Encode(t *testing.T) {
 				t.Error(err)
 			}
 
-			err = tc.converter.Encode(outputFile, convertImage)
+			err = tc.converter.encode(outputFile, convertImage)
 			if err != nil {
 				t.Error(err)
 			}
@@ -57,8 +57,8 @@ func TestConverter_Encode(t *testing.T) {
 			if err != nil {
 				t.Error(err)
 			}
-			if tc.converter.Out != actual {
-				t.Errorf("want %s, but actual %s\n", tc.converter.Out, actual)
+			if tc.converter.out != actual {
+				t.Errorf("want %s, but actual %s\n", tc.converter.out, actual)
 			}
 		})
 	}
@@ -71,12 +71,12 @@ func TestConverter_OutputFilePath(t *testing.T) {
 		outputFileName string
 	}{
 		"jpg to png": {
-			converter:      Converter{Out: "png"},
+			converter:      Converter{out: "png"},
 			inputFileName:  "/test/test.jpg",
 			outputFileName: "/test/test.png",
 		},
 		"png to jpg": {
-			converter:      Converter{Out: "jpg"},
+			converter:      Converter{out: "jpg"},
 			inputFileName:  "test/test.png",
 			outputFileName: "test/test.jpg",
 		},
@@ -85,7 +85,7 @@ func TestConverter_OutputFilePath(t *testing.T) {
 	for n, tc := range cases {
 		tc := tc
 		t.Run(n, func(t *testing.T) {
-			actual := tc.converter.OutputFilePath(tc.inputFileName)
+			actual := tc.converter.outputFilePath(tc.inputFileName)
 			if tc.outputFileName != actual {
 				t.Errorf("want %s, but actual %s\n", tc.outputFileName, actual)
 			}
@@ -100,7 +100,7 @@ func TestConverter_DirWalk(t *testing.T) {
 		fileSetSlice []FileSet
 	}{
 		"testData Dir": {
-			converter: Converter{In: "jpg", Out: "png", Directory: "./TestData/jpg"},
+			converter: Converter{in: "jpg", out: "png", directory: "./TestData/jpg"},
 			fileSetSlice: []FileSet{
 				FileSet{
 					inputFileName:  "TestData/jpg/testData.jpg",
@@ -113,7 +113,7 @@ func TestConverter_DirWalk(t *testing.T) {
 	for n, tc := range cases {
 		tc := tc
 		t.Run(n, func(t *testing.T) {
-			actual := tc.converter.DirWalk()
+			actual := tc.converter.dirWalk()
 			if !reflect.DeepEqual(tc.fileSetSlice[0], actual[0]) {
 				t.Errorf("want %v ,but actual %v", tc.fileSetSlice[0], actual[0])
 			}

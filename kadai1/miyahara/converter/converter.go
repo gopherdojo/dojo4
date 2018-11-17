@@ -17,9 +17,9 @@ import (
 // Out represent a output file type.
 // Directory represent a target directory.
 type Converter struct {
-	In        string
-	Out       string
-	Directory string
+	in        string
+	out       string
+	directory string
 }
 
 // FileSet is Set of input file name and output file name.
@@ -28,27 +28,27 @@ type FileSet struct {
 	outputFileName string
 }
 
-// NewConverter return a new Converter.
-func NewConverter() *Converter {
+// New return a new Converter.
+func New() *Converter {
 	var inputFile = flag.String("i", "jpg", "input image type")
 	var outputFile = flag.String("o", "png", "output image type")
 	flag.Parse()
-	return &Converter{In: *inputFile, Out: *outputFile, Directory: os.Args[3]}
+	return &Converter{in: *inputFile, out: *outputFile, directory: os.Args[3]}
 }
 
 // Run execute image convert function.
 func (c Converter) Run() {
-	fileSetSlice := c.DirWalk()
-	c.Convert(fileSetSlice)
+	fileSetSlice := c.dirWalk()
+	c.convert(fileSetSlice)
 }
 
-// DirWalk returns file set of input file name and output file in target directory.
-func (c Converter) DirWalk() []FileSet {
+// dirWalk returns file set of input file name and output file in target directory.
+func (c Converter) dirWalk() []FileSet {
 	fileSetSlice := make([]FileSet, 0, 50)
-	filepath.Walk(c.Directory, func(path string, info os.FileInfo, err error) error {
-		if filepath.Ext(info.Name()) == ("." + c.In) {
+	filepath.Walk(c.directory, func(path string, info os.FileInfo, err error) error {
+		if filepath.Ext(info.Name()) == ("." + c.in) {
 			inputFileName := path
-			outputFileName := c.OutputFilePath(inputFileName)
+			outputFileName := c.outputFilePath(inputFileName)
 			fileSet := FileSet{inputFileName: inputFileName, outputFileName: outputFileName}
 			fmt.Println(inputFileName, outputFileName)
 			fileSetSlice = append(fileSetSlice, fileSet)
@@ -59,8 +59,8 @@ func (c Converter) DirWalk() []FileSet {
 	return fileSetSlice
 }
 
-// Convert calls Encode function every file set.
-func (c Converter) Convert(fileSetSlice []FileSet) {
+// convert calls Encode function every file set.
+func (c Converter) convert(fileSetSlice []FileSet) {
 	for _, fileSet := range fileSetSlice {
 		func(fileSet FileSet) {
 			inputFile, _ := os.Open(fileSet.inputFileName)
@@ -68,15 +68,15 @@ func (c Converter) Convert(fileSetSlice []FileSet) {
 			outputFile, _ := os.Create(fileSet.outputFileName)
 			defer outputFile.Close()
 			image, _, _ := image.Decode(inputFile)
-			c.Encode(outputFile, image)
+			c.encode(outputFile, image)
 		}(fileSet)
 	}
 }
 
-// Encode returns error by encode function.
+// encode returns error by encode function.
 // if output type is not support, Encode returns error.
-func (c Converter) Encode(file *os.File, image image.Image) error {
-	switch c.Out {
+func (c Converter) encode(file *os.File, image image.Image) error {
+	switch c.out {
 	case "jpg", "jpeg":
 		err := jpeg.Encode(file, image, &jpeg.Options{Quality: 100})
 		return err
@@ -88,9 +88,9 @@ func (c Converter) Encode(file *os.File, image image.Image) error {
 	}
 }
 
-// OutputFilePath returns output file path to correspond input file path.
-func (c Converter) OutputFilePath(inputFileName string) string {
+// outputFilePath returns output file path to correspond input file path.
+func (c Converter) outputFilePath(inputFileName string) string {
 	stringSlice := strings.Split(inputFileName, ".")
-	outputFileName := stringSlice[0] + "." + c.Out
+	outputFileName := stringSlice[0] + "." + c.out
 	return outputFileName
 }

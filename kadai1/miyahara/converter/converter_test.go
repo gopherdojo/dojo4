@@ -30,15 +30,19 @@ func TestConverter_Encode(t *testing.T) {
 		t.Run(n, func(t *testing.T) {
 			var err error
 			outputFile, err := os.Create(tc.outputFileName)
-			defer outputFile.Close()
 			if err != nil {
 				t.Error(err)
+				if outputFile != nil {
+					outputFile.Close()
+				}
 			}
 
 			inputFile, err := os.Open(tc.inputFileName)
-			defer inputFile.Close()
 			if err != nil {
 				t.Error(err)
+				if inputFile != nil {
+					inputFile.Close()
+				}
 			}
 
 			convertImage, _, err := image.Decode(inputFile)
@@ -51,15 +55,25 @@ func TestConverter_Encode(t *testing.T) {
 				t.Error(err)
 			}
 
-			file, _ := os.Open(tc.outputFileName)
-			defer file.Close()
+			file, err := os.Open(tc.outputFileName)
+			if err != nil {
+				t.Error(err)
+				if file != nil {
+					file.Close()
+				}
+			}
 			_, actual, err := image.Decode(file)
 			if err != nil {
 				t.Error(err)
 			}
+
 			if tc.converter.out != actual {
 				t.Errorf("want %s, but actual %s\n", tc.converter.out, actual)
 			}
+
+			outputFile.Close()
+			inputFile.Close()
+			file.Close()
 		})
 	}
 }

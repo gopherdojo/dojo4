@@ -103,18 +103,32 @@ func TestConvertTo(t *testing.T) {
 			wantFile: filepath.Join("testdata", "work_Png.jpg"),
 			wantErr:  false,
 		},
+		{
+			name: "bmp is unsupported",
+			args: args{
+				srcFile:     filepath.Join("testdata", "Bmp.bmp"),
+				targetFile:  filepath.Join("testdata", "work_Bmp.bmp"),
+				imageFormat: "bmp",
+			},
+			wantFile: "",
+			wantErr:  true,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			// setup working file
 			copyFile(t, tt.args.srcFile, tt.args.targetFile)
-			defer os.Remove(tt.wantFile)
+			defer func() {
+				if tt.wantFile != "" {
+					os.Remove(tt.wantFile)
+				}
+			}()
 
 			if err := imgconv.ConvertTo(tt.args.targetFile, tt.args.imageFormat); (err != nil) != tt.wantErr {
 				t.Errorf("imgConv.ConvertTo() error = %v, wantErr %v", err, tt.wantErr)
 			}
 
-			if got := imgconv.Is(tt.wantFile, tt.args.imageFormat); !got {
+			if got := imgconv.Is(tt.wantFile, tt.args.imageFormat); !tt.wantErr && !got {
 				t.Errorf("imgConv.Is() = %v, want %v", got, true)
 			}
 		})

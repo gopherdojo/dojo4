@@ -1,15 +1,16 @@
 package imgconv
 
 import (
+	"fmt"
 	"image"
+	"image/png"
 	"os"
+	"path/filepath"
+	"strings"
 )
 
 const JpegFormat = "jpeg"
-
-type ImageFile interface {
-	ConvertTo(imageFormat string) bool
-}
+const PngFormat = "png"
 
 // Is checks whether path's format is imageFormat or not.
 func Is(path, imageFormat string) bool {
@@ -36,6 +37,38 @@ func Is(path, imageFormat string) bool {
 	return format == imageFormat
 }
 
-func ConvertTo(imageFormat string) bool {
-	panic("not implemented")
+func ConvertTo(target, imageFormat string) error {
+	reader, err := os.Open(target)
+	if err != nil {
+		return err
+	}
+	defer reader.Close()
+
+	img, format, err := image.Decode(reader)
+	if err != nil {
+		return err
+	} else if format != "jpeg" {
+		// TODO jpegやpng以外も対応する
+		return fmt.Errorf("format is not jpeg. src = %v", target)
+	}
+
+	// TODO jpegやpng以外も対応する
+	dest := replaceExt(target, "png")
+	writer, err := os.Create(dest)
+	if err != nil {
+		return err
+	}
+	defer writer.Close()
+
+	// TODO jpegやpng以外も対応する
+	err = png.Encode(writer, img)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func replaceExt(fileName, newExt string) string {
+	return fmt.Sprintf("%s.%s", strings.TrimSuffix(fileName, filepath.Ext(fileName)), newExt)
 }

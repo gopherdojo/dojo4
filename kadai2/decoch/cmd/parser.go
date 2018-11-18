@@ -20,24 +20,40 @@ func Parse() (*Command, error) {
 	inputTypeFlag := flag.String("i", "jpg", "Input image file type.")
 	outputTypeFlag := flag.String("o", "png", "Output image file type.")
 	flag.Parse()
-	inputType := converter.NewImageType(*inputTypeFlag)
-	outputType := converter.NewImageType(*outputTypeFlag)
 
 	args := flag.Args()
-	if len(args) != 1 {
-		return nil, errors.New("Invalid args")
+	dirName, err := parseCommandLineArgs(args)
+	if err != nil {
+		return nil, err
 	}
-	dirName := args[0]
 	cmd.Dir = dirName
 
-	if inputType == nil || len(string(*inputType)) == 0 {
-		return nil, errors.New("Invalid input image type.")
+	inputType, err := parseImageType(*inputTypeFlag)
+	if err != nil {
+		return nil, err
 	}
 	cmd.InputType = *inputType
 
-	if outputType == nil || len(string(*outputType)) == 0 {
-		return nil, errors.New("Invalid output image type.")
+	outputType, err := parseImageType(*outputTypeFlag)
+	if err != nil {
+		return nil, err
 	}
 	cmd.OutputType = *outputType
+
 	return &cmd, nil
+}
+
+func parseCommandLineArgs(args []string) (string, error) {
+	if len(args) != 1 {
+		return "", errors.New("Invalid args")
+	}
+	return args[0], nil
+}
+
+func parseImageType(str string) (*converter.ImageType, error) {
+	inputType := converter.NewImageType(str)
+	if inputType == nil || len(string(*inputType)) == 0 {
+		return nil, errors.New("Invalid image type.")
+	}
+	return inputType, nil
 }

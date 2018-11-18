@@ -2,6 +2,7 @@ package reader
 
 import (
 	"io/ioutil"
+	"os"
 	"path/filepath"
 	"strings"
 )
@@ -19,12 +20,19 @@ func Files(dir string, extensions []string) []string {
 			paths = append(paths, Files(filepath.Join(dir, file.Name()), extensions)...)
 			continue
 		}
-		for _, ex := range extensions {
-			if strings.HasSuffix(file.Name(), ex) {
-				paths = append(paths, filepath.Join(dir, file.Name()))
-			}
+		if hasExtension(file, extensions) {
+			paths = append(paths, filepath.Join(dir, file.Name()))
 		}
 	}
 
 	return paths
+}
+
+func hasExtension(file os.FileInfo, extensions []string) bool {
+	for _, ex := range extensions {
+		if strings.HasSuffix(file.Name(), ex) {
+			return true
+		}
+	}
+	return false
 }

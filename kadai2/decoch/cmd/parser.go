@@ -45,7 +45,7 @@ func Parse() (*Command, error) {
 
 func parseCommandLineArgs(args []string) (string, error) {
 	if len(args) != 1 {
-		return "", errors.New("Invalid args")
+		return "", errors.New("invalid args")
 	}
 	return args[0], nil
 }
@@ -53,7 +53,7 @@ func parseCommandLineArgs(args []string) (string, error) {
 func parseImageType(str string) (*converter.ImageType, error) {
 	inputType := converter.NewImageType(str)
 	if inputType == nil || len(string(*inputType)) == 0 {
-		return nil, errors.New("Invalid image type.")
+		return nil, errors.New("invalid image type")
 	}
 	return inputType, nil
 }

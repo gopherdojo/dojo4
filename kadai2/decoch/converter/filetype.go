@@ -42,7 +42,7 @@ func (i *ImageType) Extensions() *[]string {
 }
 
 // Converter get a image convert function.
-func (i ImageType) Converter() func(src string) error {
+func (i *ImageType) Converter() func(src string) error {
 	switch i {
 	case Png:
 		return convertToPng

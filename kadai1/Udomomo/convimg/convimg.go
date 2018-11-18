@@ -1,6 +1,7 @@
 package convimg
 
 import (
+	"fmt"
 	"image"
 	"io/ioutil"
 	"log"
@@ -8,6 +9,7 @@ import (
 	"path/filepath"
 )
 
+//SearchFile : searchFile関数が出力する変換後のパスを貯めておき、返り値として返す。
 func SearchFile(rootDir, from, to string) []string {
 	processedPaths := make([]string, 0)
 	processedPaths = searchFile(rootDir, from, to, processedPaths)
@@ -36,6 +38,7 @@ func searchFile(rootDir, from, to string, processedPaths []string) []string {
 
 		processed := convFile(path, newPath)
 		processedPaths = append(processedPaths, processed)
+		os.Remove(path)
 	}
 	return processedPaths
 }
@@ -61,18 +64,20 @@ func generateNewExt(path, from, to string) (willConv bool, newPath string) {
 func convFile(path, newPath string) string {
 	file, err := os.Open(path)
 	if err != nil {
-		print("open failed")
+		fmt.Println("open failed")
 		log.Fatal(err)
 	}
 	defer file.Close()
 
 	decoded, format, err := image.Decode(file)
 	if err != nil {
+		fmt.Println("decode failed")
+		log.Fatal(err)
 	}
 
 	out, err := os.Create(newPath)
 	if err != nil {
-		print("create failed")
+		fmt.Println("create failed")
 		log.Fatal(err)
 	}
 	defer out.Close()
@@ -98,10 +103,9 @@ func convFile(path, newPath string) string {
 	}
 
 	if err := c.convimg(); err != nil {
-		print("encode failed")
+		fmt.Println("encode failed")
 		log.Fatal(err)
 	}
 
-	os.Remove(path)
 	return newPath
 }

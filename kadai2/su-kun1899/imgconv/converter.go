@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"image"
 	"image/gif"
+	"image/jpeg"
 	"image/png"
 	"io"
 	"os"
@@ -45,6 +46,20 @@ func (*gifFile) ext() string {
 	return "gif"
 }
 
+type jpegFile struct{}
+
+func (*jpegFile) format() string {
+	return JpegFormat
+}
+
+func (*jpegFile) ext() string {
+	return "jpg"
+}
+
+func (*jpegFile) encode(w io.Writer, m image.Image) error {
+	return jpeg.Encode(w, m, nil)
+}
+
 func (*gifFile) encode(w io.Writer, m image.Image) error {
 	return gif.Encode(w, m, nil)
 }
@@ -81,6 +96,8 @@ func ConvertTo(target, imageFormat string) error {
 		f = &pngFile{}
 	case GifFormat:
 		f = &gifFile{}
+	case JpegFormat:
+		f = &jpegFile{}
 	default:
 		return fmt.Errorf("%s is unsupported format", imageFormat)
 	}

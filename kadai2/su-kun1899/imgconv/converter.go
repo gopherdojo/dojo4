@@ -3,7 +3,9 @@ package imgconv
 import (
 	"fmt"
 	"image"
+	"image/gif"
 	"image/png"
+	"io"
 	"os"
 	"path/filepath"
 	"strings"
@@ -11,6 +13,41 @@ import (
 
 const JpegFormat = "jpeg"
 const PngFormat = "png"
+const GifFormat = "gif"
+
+type imgFile interface {
+	format() string
+	ext() string
+	encode(w io.Writer, m image.Image) error
+}
+
+type pngFile struct{}
+
+func (*pngFile) format() string {
+	return PngFormat
+}
+
+func (*pngFile) ext() string {
+	return "png"
+}
+
+func (*pngFile) encode(w io.Writer, m image.Image) error {
+	return png.Encode(w, m)
+}
+
+type gifFile struct{}
+
+func (*gifFile) format() string {
+	return GifFormat
+}
+
+func (*gifFile) ext() string {
+	return "gif"
+}
+
+func (*gifFile) encode(w io.Writer, m image.Image) error {
+	return gif.Encode(w, m, nil)
+}
 
 // Is checks whether path's format is imageFormat or not.
 func Is(path, imageFormat string) bool {
@@ -38,35 +75,40 @@ func Is(path, imageFormat string) bool {
 }
 
 func ConvertTo(target, imageFormat string) error {
+	var f imgFile
+	switch imageFormat {
+	case PngFormat:
+		f = &pngFile{}
+	case GifFormat:
+		f = &gifFile{}
+	default:
+		return fmt.Errorf("%s is unsupported format", imageFormat)
+	}
+
 	reader, err := os.Open(target)
 	if err != nil {
 		return err
 	}
 	defer reader.Close()
 
-	img, format, err := image.Decode(reader)
+	img, _, err := image.Decode(reader)
 	if err != nil {
 		return err
-	} else if format != "jpeg" {
-		// TODO jpegやpng以外も対応する
-		return fmt.Errorf("format is not jpeg. src = %v", target)
 	}
 
-	// TODO jpegやpng以外も対応する
-	dest := replaceExt(target, "png")
+	dest := replaceExt(target, f.ext())
 	writer, err := os.Create(dest)
 	if err != nil {
 		return err
 	}
 	defer writer.Close()
 
-	// TODO jpegやpng以外も対応する
-	err = png.Encode(writer, img)
+	err = f.encode(writer, img)
 	if err != nil {
 		return err
 	}
 
-	return nil
+	return os.Remove(target)
 }
 
 func replaceExt(fileName, newExt string) string {

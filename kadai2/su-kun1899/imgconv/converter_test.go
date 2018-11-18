@@ -83,12 +83,21 @@ func TestConvertTo(t *testing.T) {
 			wantFile: filepath.Join("testdata", "work_Jpeg.png"),
 			wantErr:  false,
 		},
+		{
+			name: "jpg to gif",
+			args: args{
+				srcFile:     filepath.Join("testdata", "Jpeg.jpg"),
+				targetFile:  filepath.Join("testdata", "work_Jpeg.jpg"),
+				imageFormat: imgconv.GifFormat,
+			},
+			wantFile: filepath.Join("testdata", "work_Jpeg.gif"),
+			wantErr:  false,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			// setup working file
 			copyFile(t, tt.args.srcFile, tt.args.targetFile)
-			defer os.Remove(tt.args.targetFile)
 			defer os.Remove(tt.wantFile)
 
 			if err := imgconv.ConvertTo(tt.args.targetFile, tt.args.imageFormat); (err != nil) != tt.wantErr {

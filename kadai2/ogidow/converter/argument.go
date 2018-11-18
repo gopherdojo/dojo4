@@ -8,8 +8,8 @@ type Argument struct {
 }
 
 // InputExtensions retrun input extentions
-func (argument *Argument) InputExtensions() []string {
-	switch argument.InputFormat {
+func (a *Argument) InputExtensions() []string {
+	switch a.InputFormat {
 	case "jpg", "jpeg":
 		return []string{".jpg", ".jpeg"}
 	case "png":
@@ -22,8 +22,8 @@ func (argument *Argument) InputExtensions() []string {
 }
 
 // OutputExtension retrun output extentions
-func (argument *Argument) OutputExtension() string {
-	switch argument.OutputFormat {
+func (a *Argument) OutputExtension() string {
+	switch a.OutputFormat {
 	case "jpg", "jpeg":
 		return ".jpg"
 	case "png":
@@ -36,11 +36,11 @@ func (argument *Argument) OutputExtension() string {
 }
 
 // IsValid is Verify options
-func (argument *Argument) IsValid() bool {
-	if len(argument.InputExtensions()) == 0 {
+func (a *Argument) IsValid() bool {
+	if len(a.InputExtensions()) == 0 {
 		return false
 	}
-	if argument.OutputExtension() == "" {
+	if a.OutputExtension() == "" {
 		return false
 	}
 	return true

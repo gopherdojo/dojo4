@@ -124,8 +124,8 @@ func TestConvertTo(t *testing.T) {
 				}
 			}()
 
-			if err := imgconv.ConvertTo(tt.args.targetFile, tt.args.imageFormat); (err != nil) != tt.wantErr {
-				t.Errorf("imgConv.ConvertTo() error = %v, wantErr %v", err, tt.wantErr)
+			if err := imgconv.Convert(tt.args.targetFile, tt.args.imageFormat); (err != nil) != tt.wantErr {
+				t.Errorf("imgConv.Convert() error = %v, wantErr %v", err, tt.wantErr)
 			}
 
 			if got := imgconv.Is(tt.wantFile, tt.args.imageFormat); !tt.wantErr && !got {

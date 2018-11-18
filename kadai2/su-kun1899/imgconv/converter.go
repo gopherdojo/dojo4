@@ -89,7 +89,7 @@ func Is(path, imageFormat string) bool {
 	return format == imageFormat
 }
 
-func ConvertTo(target, imageFormat string) error {
+func Convert(target, imageFormat string) error {
 	var f imgFile
 	switch imageFormat {
 	case PngFormat:

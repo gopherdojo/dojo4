@@ -42,7 +42,6 @@ func (c *CLI) Run(args []string) int {
 	flags := flag.NewFlagSet("imconv", flag.ContinueOnError)
 	flags.SetOutput(c.errStream)
 
-	// TODO flagsに突っ込まないといけない一方、オプション書式にも定義したいので、上書きしてしまっている
 	tmpf, tmpt := "", ""
 	f, t := &tmpf, &tmpt
 	flags.StringVar(t, "f", "jpg", "input image file format")

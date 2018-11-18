@@ -25,12 +25,15 @@ func main() {
 
 	path := flag.Arg(0)
 
-	if contains(suffix, f) == false || contains(suffix, t) == false {
+	if contains(SUFFIX, f) == false || contains(SUFFIX, t) == false {
 		fmt.Printf("Invalid suffix: %s, %s", f, t)
 		os.Exit(1)
 	}
 
-	convimg.SearchFile(path, "."+f, "."+t)
+	processedPaths := convimg.SearchFile(path, SEPARATOR+f, SEPARATOR+t)
+	for _, p := range processedPaths {
+		println(p)
+	}
 }
 
 func contains(su []string, fl string) bool {

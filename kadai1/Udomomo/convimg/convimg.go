@@ -9,7 +9,10 @@ import (
 )
 
 //SearchFile : rootDirにあるファイルの一覧を探索。ディレクトリがあれば再帰処理する。
-func SearchFile(rootDir, from, to string) {
+func SearchFile(rootDir, from, to string) []string {
+
+	processedPaths := make([]string, 0)
+
 	files, err := ioutil.ReadDir(rootDir)
 	if err != nil {
 		log.Fatal(err)
@@ -27,9 +30,12 @@ func SearchFile(rootDir, from, to string) {
 			continue
 		}
 
-		println(convFile(path, newPath))
+		processed := convFile(path, newPath)
+		processedPaths = append(processedPaths, processed)
 
 	}
+
+	return processedPaths
 }
 
 //generateNewExt : 変換が必要な場合、変換後のパスを生成して返す

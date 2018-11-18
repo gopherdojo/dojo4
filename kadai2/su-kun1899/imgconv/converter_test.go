@@ -4,6 +4,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"reflect"
 	"testing"
 
 	"github.com/gopherdojo/dojo4/kadai2/su-kun1899/imgconv"
@@ -124,10 +125,13 @@ func TestConvertTo(t *testing.T) {
 				}
 			}()
 
-			if err := imgconv.Convert(tt.args.targetFile, tt.args.imageFormat); (err != nil) != tt.wantErr {
+			newFile, err := imgconv.Convert(tt.args.targetFile, tt.args.imageFormat)
+			if (err != nil) != tt.wantErr {
 				t.Errorf("imgConv.Convert() error = %v, wantErr %v", err, tt.wantErr)
 			}
-
+			if !reflect.DeepEqual(newFile, tt.wantFile) {
+				t.Errorf("imgConv.Convert() = %v, want %v", newFile, tt.wantFile)
+			}
 			if got := imgconv.Is(tt.wantFile, tt.args.imageFormat); !tt.wantErr && !got {
 				t.Errorf("imgConv.Is() = %v, want %v", got, true)
 			}

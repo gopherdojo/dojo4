@@ -89,7 +89,7 @@ func Is(path, imageFormat string) bool {
 	return format == imageFormat
 }
 
-func Convert(target, imageFormat string) error {
+func Convert(target, imageFormat string) (string, error) {
 	var f imgFile
 	switch imageFormat {
 	case PngFormat:
@@ -99,33 +99,33 @@ func Convert(target, imageFormat string) error {
 	case JpegFormat:
 		f = &jpegFile{}
 	default:
-		return fmt.Errorf("%s is unsupported format", imageFormat)
+		return "", fmt.Errorf("%s is unsupported format", imageFormat)
 	}
 
 	reader, err := os.Open(target)
 	if err != nil {
-		return err
+		return "", err
 	}
 	defer reader.Close()
 
 	img, _, err := image.Decode(reader)
 	if err != nil {
-		return err
+		return "", err
 	}
 
 	dest := replaceExt(target, f.ext())
 	writer, err := os.Create(dest)
 	if err != nil {
-		return err
+		return dest, err
 	}
 	defer writer.Close()
 
 	err = f.encode(writer, img)
 	if err != nil {
-		return err
+		return dest, err
 	}
 
-	return os.Remove(target)
+	return dest, os.Remove(target)
 }
 
 func replaceExt(fileName, newExt string) string {

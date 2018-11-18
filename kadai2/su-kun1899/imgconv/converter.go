@@ -7,15 +7,11 @@ import (
 
 const JpegFormat = "jpeg"
 
-type FilePath string
-
 type ImageFile interface {
 	ConvertTo(imageFormat string) bool
 }
 
-func (fp FilePath) Is(imageFormat string) bool {
-	path := string(fp)
-
+func Is(path, imageFormat string) bool {
 	info, err := os.Stat(path)
 	if err != nil {
 		return false

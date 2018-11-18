@@ -24,6 +24,30 @@ func TestFilePath_Is(t *testing.T) {
 			},
 			want: true,
 		},
+		{
+			name: "gif file is not jpeg",
+			args: args{
+				path:        filepath.Join("testdata", "Gif.gif"),
+				imageFormat: imgconv.JpegFormat,
+			},
+			want: false,
+		},
+		{
+			name: "directory is not jpeg",
+			args: args{
+				path:        filepath.Join("testdata"),
+				imageFormat: imgconv.JpegFormat,
+			},
+			want: false,
+		},
+		{
+			name: "not exist file is not jpeg",
+			args: args{
+				path:        filepath.Join("testdata", "dummy.jpg"),
+				imageFormat: imgconv.JpegFormat,
+			},
+			want: false,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

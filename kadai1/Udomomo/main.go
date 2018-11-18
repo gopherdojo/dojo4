@@ -26,7 +26,7 @@ func main() {
 	path := flag.Arg(0)
 
 	if contains(SUFFIX, f) == false || contains(SUFFIX, t) == false {
-		fmt.Printf("Invalid suffix: %s, %s", f, t)
+		fmt.Printf("Invalid suffix: %s, %s\n", f, t)
 		os.Exit(1)
 	}
 

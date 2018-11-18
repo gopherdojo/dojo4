@@ -2,7 +2,6 @@ package convimg
 
 import (
 	"errors"
-	"fmt"
 	"image"
 	"image/gif"
 	"image/jpeg"
@@ -31,7 +30,6 @@ func (c *ConvImg) Convert() error {
 	if err != nil {
 		return err
 	}
-	fmt.Println(files)
 	switch c.To {
 	case "png":
 		err = c.convertToPngs(files)

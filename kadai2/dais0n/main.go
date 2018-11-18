@@ -23,5 +23,5 @@ func main() {
 	convert := convimg.NewConvert(from, to, path)
 	cli := &CLI{outStream: os.Stdout, errStream: os.Stderr, convert: convert}
 
-	os.Exit(cli.Run(os.Args))
+	os.Exit(cli.Run())
 }

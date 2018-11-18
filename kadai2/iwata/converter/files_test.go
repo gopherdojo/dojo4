@@ -4,10 +4,10 @@ import (
 	"errors"
 	"fmt"
 	"os"
-	"strings"
 	"testing"
 
 	"github.com/gopherdojo/dojo4/kadai2/iwata/converter"
+	"github.com/gopherdojo/dojo4/kadai2/iwata/testutil"
 )
 
 type mockConvertOption struct {
@@ -73,28 +73,12 @@ func TestConvertFiles(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			err := converter.ConvertFiles(filePathes(tt.args.files), tt.args.c)
-			testError(t, err, tt.wantErr, "converter.ConvertFiles() Error")
+			testutil.ContainsError(t, err, tt.wantErr, "converter.ConvertFiles() Error")
 			for _, f := range filePathes(tt.createdFiles) {
 				testFileExist(t, f)
 				os.Remove(f)
 			}
 		})
-	}
-}
-
-func testError(t *testing.T, gotErr, wantErr error, msg string) {
-	t.Helper()
-
-	if gotErr == nil && wantErr == nil {
-		return
-	} else if gotErr == nil {
-		t.Fatalf("%s: want [%s] error, but got nil", msg, wantErr)
-	} else if wantErr == nil {
-		t.Fatalf("%s: got [%s] error, but want nil", msg, gotErr)
-	}
-
-	if strings.Contains(gotErr.Error(), wantErr.Error()) == false {
-		t.Errorf("%s: [%s] not contains [%s]", msg, gotErr, wantErr)
 	}
 }
 

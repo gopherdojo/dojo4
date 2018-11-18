@@ -9,6 +9,7 @@ import (
 	"testing"
 
 	"github.com/gopherdojo/dojo4/kadai2/iwata/cmdparser"
+	"github.com/gopherdojo/dojo4/kadai2/iwata/testutil"
 )
 
 func cmdArgs(cmd string) []string {
@@ -61,7 +62,7 @@ func TestCmd_Parse(t *testing.T) {
 			errStream := new(bytes.Buffer)
 			c := cmdparser.NewCmd(errStream)
 			got, err := c.Parse(cmdArgs(tt.cmd))
-			testError(t, err, tt.wantErr, "Cmd.Parse() Error")
+			testutil.ContainsError(t, err, tt.wantErr, "Cmd.Parse() Error")
 			if err != nil {
 				if !strings.Contains(errStream.String(), tt.wantStdError) {
 					t.Errorf("Output=%q, want %q", errStream.String(), tt.wantStdError)
@@ -72,21 +73,5 @@ func TestCmd_Parse(t *testing.T) {
 				t.Errorf("Cmd.Parse() = %v, want %v", got, tt.wantConfig)
 			}
 		})
-	}
-}
-
-func testError(t *testing.T, gotErr, wantErr error, msg string) {
-	t.Helper()
-
-	if gotErr == nil && wantErr == nil {
-		return
-	} else if gotErr == nil {
-		t.Fatalf("%s: want [%s] error, but got nil", msg, wantErr)
-	} else if wantErr == nil {
-		t.Fatalf("%s: got [%s] error, but want nil", msg, gotErr)
-	}
-
-	if strings.Contains(gotErr.Error(), wantErr.Error()) == false {
-		t.Errorf("%s: [%s] not contains [%s]", msg, gotErr, wantErr)
 	}
 }

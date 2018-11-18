@@ -8,7 +8,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/gopherdojo/dojo4/kadai1/su-kun1899/imgconv"
+	"github.com/gopherdojo/dojo4/kadai2/su-kun1899/imgconv"
 )
 
 func TestPngConv_Convert(t *testing.T) {

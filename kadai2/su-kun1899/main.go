@@ -3,7 +3,7 @@ package main
 import (
 	"errors"
 	"fmt"
-	"github.com/gopherdojo/dojo4/kadai1/su-kun1899/imgconv"
+	"github.com/gopherdojo/dojo4/kadai2/su-kun1899/imgconv"
 	"os"
 	"path/filepath"
 	"strings"

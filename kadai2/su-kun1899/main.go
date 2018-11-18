@@ -14,6 +14,7 @@ func main() {
 }
 
 func runCmd(args []string) int {
+	// TODO fromとtoをオプションで受け取りたい
 	if len(args) != 1 {
 		fmt.Fprintln(os.Stderr, errors.New("missing target directory"))
 		return 1

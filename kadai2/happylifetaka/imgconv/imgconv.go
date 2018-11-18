@@ -35,7 +35,6 @@ type Result struct {
 }
 
 func (ic *ImgConverter) SetConvertFormat(fromFormat string, toFormat string) error {
-
 	if fromFormat == toFormat {
 		return errors.New("The same value must not be specified for fromFormat and toFormat.")
 	}
@@ -57,8 +56,10 @@ func (ic *ImgConverter) SetConvertFormat(fromFormat string, toFormat string) err
 // Target the file with the argument "fromFormat".
 // Convert to "toFormat" image format.
 func (ic *ImgConverter) Convert(dir string) ([]Result, error) {
-
 	rs := []Result{}
+	if ic.setFormat != true {
+		return rs, errors.New("not set format.")
+	}
 	if _, err := os.Stat(dir); err != nil {
 		return rs, errors.New("target file path is not exist.")
 	}

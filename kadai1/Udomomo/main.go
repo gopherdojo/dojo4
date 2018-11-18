@@ -5,12 +5,13 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/Udomomo/dojo4/kadai1/Udomomo/convimg"
+	"github.com/gopherdojo/dojo4/kadai1/Udomomo/convimg"
 )
 
 func main() {
 
-	var suffix = []string{"jpg", "jpeg", "png", "gif"}
+	SUFFIX := []string{"jpg", "jpeg", "png", "gif"}
+	SEPARATOR := "."
 
 	var (
 		f string

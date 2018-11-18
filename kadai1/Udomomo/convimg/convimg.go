@@ -8,10 +8,14 @@ import (
 	"path/filepath"
 )
 
-//SearchFile : rootDirにあるファイルの一覧を探索。ディレクトリがあれば再帰処理する。
 func SearchFile(rootDir, from, to string) []string {
-
 	processedPaths := make([]string, 0)
+	processedPaths = searchFile(rootDir, from, to, processedPaths)
+	return processedPaths
+}
+
+//searchFile : rootDirにあるファイルの一覧を探索。ディレクトリがあれば再帰処理する。
+func searchFile(rootDir, from, to string, processedPaths []string) []string {
 
 	files, err := ioutil.ReadDir(rootDir)
 	if err != nil {
@@ -21,7 +25,7 @@ func SearchFile(rootDir, from, to string) []string {
 	for _, file := range files {
 		path := filepath.Join(rootDir, file.Name())
 		if file.IsDir() {
-			SearchFile(path, from, to)
+			processedPaths = searchFile(path, from, to, processedPaths)
 			continue
 		}
 
@@ -32,9 +36,7 @@ func SearchFile(rootDir, from, to string) []string {
 
 		processed := convFile(path, newPath)
 		processedPaths = append(processedPaths, processed)
-
 	}
-
 	return processedPaths
 }
 

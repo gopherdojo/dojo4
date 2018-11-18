@@ -22,7 +22,7 @@ func runCmd(args []string) int {
 	targetDir := args[0]
 	converter := imgconv.PngConv{}
 	err := filepath.Walk(targetDir, func(path string, info os.FileInfo, err error) error {
-		if !converter.IsConvertible(path) {
+		if !imgconv.Is(path, imgconv.JpegFormat) {
 			return nil
 		}
 

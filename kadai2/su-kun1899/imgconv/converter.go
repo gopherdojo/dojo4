@@ -11,6 +11,7 @@ type ImageFile interface {
 	ConvertTo(imageFormat string) bool
 }
 
+// Is checks whether path's format is imageFormat or not.
 func Is(path, imageFormat string) bool {
 	info, err := os.Stat(path)
 	if err != nil {

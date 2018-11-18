@@ -47,29 +47,3 @@ func (PngConv) Convert(src, dest string) error {
 
 	return nil
 }
-
-// IsConvertible checks whether path is convertible to png format or not.
-// Currently only jpeg format file is supported.
-func (PngConv) IsConvertible(path string) bool {
-	info, err := os.Stat(path)
-	if err != nil {
-		return false
-	}
-
-	if info.IsDir() {
-		return false
-	}
-
-	file, err := os.Open(path)
-	if err != nil {
-		return false
-	}
-	defer file.Close()
-
-	_, format, err := image.Decode(file)
-	if err != nil {
-		return false
-	}
-
-	return format == "jpeg"
-}

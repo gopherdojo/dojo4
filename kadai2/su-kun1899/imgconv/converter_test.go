@@ -62,13 +62,8 @@ func TestFilePath_Is(t *testing.T) {
 }
 
 func TestConvertTo(t *testing.T) {
-	// setup working file
-	src := filepath.Join("testdata", "Jpeg.jpg")
-	dest := filepath.Join("testdata", "Jpeg1.jpg")
-	copyFile(t, src, dest)
-	defer os.Remove(dest)
-
 	type args struct {
+		srcFile     string
 		targetFile  string
 		imageFormat string
 	}
@@ -78,11 +73,24 @@ func TestConvertTo(t *testing.T) {
 		wantFile string
 		wantErr  bool
 	}{
-		{name: "jpg to png", args: args{targetFile: dest, imageFormat: imgconv.PngFormat}, wantFile: filepath.Join("testdata", "Jpeg1.png"), wantErr: false},
+		{
+			name: "jpg to png",
+			args: args{
+				srcFile:     filepath.Join("testdata", "Jpeg.jpg"),
+				targetFile:  filepath.Join("testdata", "work_Jpeg.jpg"),
+				imageFormat: imgconv.PngFormat,
+			},
+			wantFile: filepath.Join("testdata", "work_Jpeg.png"),
+			wantErr:  false,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			// setup working file
+			copyFile(t, tt.args.srcFile, tt.args.targetFile)
+			defer os.Remove(tt.args.targetFile)
 			defer os.Remove(tt.wantFile)
+
 			if err := imgconv.ConvertTo(tt.args.targetFile, tt.args.imageFormat); (err != nil) != tt.wantErr {
 				t.Errorf("imgConv.ConvertTo() error = %v, wantErr %v", err, tt.wantErr)
 			}

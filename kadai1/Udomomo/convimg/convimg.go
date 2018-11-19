@@ -18,7 +18,7 @@ func SearchFile(rootDir, from, to string) []string {
 	for _, p := range processingPaths {
 		e := filepath.Ext(p)
 		np := p[:len(p)-len(e)] + to
-		processedPaths = append(processedPaths, convFile(p, np))
+		processedPaths = append(processedPaths, convFile(p, np, to))
 		os.Remove(p)
 	}
 
@@ -69,11 +69,11 @@ func validateIfConvNeeded(path, from, to string) bool {
 		return false
 	}
 
-	return true //path[:len(path)-len(ext)] + to
+	return true
 }
 
 //convFile : 変換を実行する
-func convFile(path, newPath string) string {
+func convFile(path, newPath, toExt string) string {
 	file, err := os.Open(path)
 	if err != nil {
 		fmt.Println("open failed")
@@ -81,7 +81,7 @@ func convFile(path, newPath string) string {
 	}
 	defer file.Close()
 
-	decoded, format, err := image.Decode(file)
+	decoded, _, err := image.Decode(file)
 	if err != nil {
 		fmt.Println("decode failed")
 		log.Fatal(err)
@@ -95,16 +95,16 @@ func convFile(path, newPath string) string {
 	defer out.Close()
 
 	var c Converter
-	switch format {
-	case "jpeg", "jpg":
+	switch toExt {
+	case ".jpeg", ".jpg":
 		{
 			c = &jpgConverter{out, decoded}
 		}
-	case "png":
+	case ".png":
 		{
 			c = &pngConverter{out, decoded}
 		}
-	case "gif":
+	case ".gif":
 		{
 			c = &gifConverter{out, decoded}
 		}

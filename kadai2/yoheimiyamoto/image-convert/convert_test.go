@@ -12,7 +12,7 @@ const fileName = "img.jpg"
 var filePath = fmt.Sprintf("%s/%s", dirPath, fileName)
 
 func TestChangeExt(t *testing.T) {
-	testCases := []struct {
+	cases := []struct {
 		ext string // 変換先のフォーマット
 		in  string
 		out string
@@ -21,10 +21,10 @@ func TestChangeExt(t *testing.T) {
 		{"png", "/path/hello.jpg", "/path/hello.png"},
 		{"png", "/path/hello.test.jpg", "/path/hello.test.png"},
 	}
-	for _, tt := range testCases {
-		actual := changeExt(tt.in, tt.ext)
-		if actual != tt.out {
-			t.Errorf(`expect="%s", actual="%s"`, tt.out, actual)
+	for _, c := range cases {
+		actual := changeExt(c.in, c.ext)
+		if actual != c.out {
+			t.Errorf(`changeExt(%s, %s) => "%s", want "%s"`, c.in, c.ext, c.out, actual)
 		}
 	}
 }

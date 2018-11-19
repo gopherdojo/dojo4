@@ -3,7 +3,6 @@ package cmdparser_test
 import (
 	"bytes"
 	"errors"
-	"fmt"
 	"reflect"
 	"strings"
 	"testing"
@@ -13,7 +12,7 @@ import (
 )
 
 func cmdArgs(cmd string) []string {
-	return strings.Split(fmt.Sprintf("%s %s", "imgconv", cmd), " ")
+	return append([]string{"imgconv"}, strings.Split(cmd, " ")...)
 }
 
 func TestCmdConfig_SrcDir(t *testing.T) {

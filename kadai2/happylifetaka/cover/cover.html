@@ -1,0 +1,246 @@
+
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+		<style>
+			body {
+				background: black;
+				color: rgb(80, 80, 80);
+			}
+			body, pre, #legend span {
+				font-family: Menlo, monospace;
+				font-weight: bold;
+			}
+			#topbar {
+				background: black;
+				position: fixed;
+				top: 0; left: 0; right: 0;
+				height: 42px;
+				border-bottom: 1px solid rgb(80, 80, 80);
+			}
+			#content {
+				margin-top: 50px;
+			}
+			#nav, #legend {
+				float: left;
+				margin-left: 10px;
+			}
+			#legend {
+				margin-top: 12px;
+			}
+			#nav {
+				margin-top: 10px;
+			}
+			#legend span {
+				margin: 0 5px;
+			}
+			.cov0 { color: rgb(192, 0, 0) }
+.cov1 { color: rgb(128, 128, 128) }
+.cov2 { color: rgb(116, 140, 131) }
+.cov3 { color: rgb(104, 152, 134) }
+.cov4 { color: rgb(92, 164, 137) }
+.cov5 { color: rgb(80, 176, 140) }
+.cov6 { color: rgb(68, 188, 143) }
+.cov7 { color: rgb(56, 200, 146) }
+.cov8 { color: rgb(44, 212, 149) }
+.cov9 { color: rgb(32, 224, 152) }
+.cov10 { color: rgb(20, 236, 155) }
+
+		</style>
+	</head>
+	<body>
+		<div id="topbar">
+			<div id="nav">
+				<select id="files">
+				
+				<option value="file0">github.com/happylifetaka/dojo4/kadai2/happylifetaka/imgconv/imgconv.go (96.8%)</option>
+				
+				</select>
+			</div>
+			<div id="legend">
+				<span>not tracked</span>
+			
+				<span class="cov0">not covered</span>
+				<span class="cov8">covered</span>
+			
+			</div>
+		</div>
+		<div id="content">
+		
+		<pre class="file" id="file0" style="display: none">package imgconv
+
+import (
+        "errors"
+        "image"
+        "image/gif"
+        "image/jpeg"
+        "image/png"
+        "os"
+        "path/filepath"
+        "strings"
+)
+
+// ImgConverter 画像変換器。「SetConvertFormat」メソッドでフォーマットを指定して、「Convert」メソッドで変換処理を行います。
+// Image converter. Specify the format with the "SetConvertFormat" method and convert it with the "Convert" method.
+type ImgConverter struct {
+        fromFormat string
+        toFormat   string
+        setFormat  bool
+}
+
+type singleImgConverter struct {
+        fromFilePath string
+        toFilePath   string
+        toFormat     string
+}
+
+// Result 「Msg」には変換元ファイルパスと変換先ファイルパスを記すメッセージが格納されています。
+// 「Err」には変換時エラーがあった場合、エラーメッセージが格納されています。
+// "Msg" contains messages describing the conversion source file path and conversion destination file path.
+// "Err" contains an error message if there is an error at conversion.
+type Result struct {
+        Msg string
+        Err error
+}
+
+// SetConvertFormat 変換元画像フォーマットと変換後画像フォーマットを指定します。
+// Specify the source image format and the converted image format.
+func (ic *ImgConverter) SetConvertFormat(fromFormat string, toFormat string) error <span class="cov8" title="1">{
+        ic.setFormat = false
+        if fromFormat == toFormat </span><span class="cov8" title="1">{
+                return errors.New("The same value must not be specified for fromFormat and toFormat")
+        }</span>
+        <span class="cov8" title="1">if fromFormat != "jpg" &amp;&amp; fromFormat != "png" &amp;&amp; fromFormat != "gif" </span><span class="cov8" title="1">{
+                return errors.New("fromFormat value of A is incorrect.allow value jpg png gif")
+        }</span>
+        <span class="cov8" title="1">if toFormat != "jpg" &amp;&amp; toFormat != "png" &amp;&amp; toFormat != "gif" </span><span class="cov8" title="1">{
+                return errors.New("toFormat value of A is incorrect.allow value jpg png gif")
+        }</span>
+        <span class="cov8" title="1">ic.fromFormat = fromFormat
+        ic.toFormat = toFormat
+        ic.setFormat = true
+        return nil</span>
+
+}
+
+// Convert 「dir」で指定したディレクトリ配下全ての「fromFormat」の画像形式に一致する画像ファイルを「toFormat」の画像形式に変換します。
+// Convert all images under the specified directory.
+// Target the file with the argument "fromFormat".
+// Convert to "toFormat" image format.
+func (ic *ImgConverter) Convert(dir string) ([]Result, error) <span class="cov8" title="1">{
+        rs := []Result{}
+        if ic.setFormat != true </span><span class="cov8" title="1">{
+                return rs, errors.New("not set format")
+        }</span>
+        <span class="cov8" title="1">if _, err := os.Stat(dir); err != nil </span><span class="cov8" title="1">{
+                return rs, errors.New("target file path is not exist")
+        }</span>
+
+        <span class="cov8" title="1">err := filepath.Walk(dir, func(path string, info os.FileInfo, err error) error </span><span class="cov8" title="1">{
+                if err != nil </span><span class="cov0" title="0">{
+                        return err
+                }</span>
+                <span class="cov8" title="1">if !info.IsDir() </span><span class="cov8" title="1">{
+                        fileExt := filepath.Ext(info.Name())
+                        newFileName := strings.TrimSuffix(path, fileExt)
+                        if isTargetFile(ic.fromFormat, fileExt) </span><span class="cov8" title="1">{
+                                var sic singleImgConverter
+                                sic.fromFilePath = path
+                                sic.toFilePath = newFileName + "." + ic.toFormat
+                                sic.toFormat = ic.toFormat
+                                errConv := sic.convertTo()
+                                if errConv != nil </span><span class="cov8" title="1">{
+                                        rs = append(rs, Result{Msg: path + " -&gt; " + newFileName + "." + ic.toFormat, Err: errConv})
+                                }</span> else<span class="cov8" title="1"> {
+                                        rs = append(rs, Result{Msg: path + " -&gt; " + newFileName + "." + ic.toFormat, Err: nil})
+                                }</span>
+                        }
+                }
+                <span class="cov8" title="1">return nil</span>
+        })
+        <span class="cov8" title="1">return rs, err</span>
+}
+
+// isTargetFile 「fileExt」が指定した画像形式「fromFormat」に一致する拡張子か調べます。
+// Determines whether "fileExt" matches the specified image format "fromFormat" extension.
+func isTargetFile(fromFormat string, fileExt string) bool <span class="cov8" title="1">{
+        if fromFormat == "jpg" &amp;&amp; (fileExt == ".jpg" || fileExt == ".jpeg") </span><span class="cov8" title="1">{
+                return true
+        }</span>
+        <span class="cov8" title="1">if fromFormat == "gif" &amp;&amp; fileExt == ".gif" </span><span class="cov8" title="1">{
+                return true
+        }</span>
+        <span class="cov8" title="1">if fromFormat == "png" &amp;&amp; fileExt == ".png" </span><span class="cov8" title="1">{
+                return true
+        }</span>
+        <span class="cov8" title="1">return false</span>
+}
+
+//　convertTo 「fromFilePath」のファイルを「toFormat」の画像形式に変換し、「toFilePath」のファイルとして保存します。
+// Convert "fromFilePath" file to "toFormat" image format and save it as "toFilePath" file.
+func (sic *singleImgConverter) convertTo() error <span class="cov8" title="1">{
+        file, err := os.Open(sic.fromFilePath)
+        if err != nil </span><span class="cov8" title="1">{
+                return errors.New("input file open error")
+        }</span>
+        <span class="cov8" title="1">defer file.Close()
+
+        img, _, err := image.Decode(file)
+        if err != nil </span><span class="cov8" title="1">{
+                return errors.New("input file decode error")
+        }</span>
+
+        <span class="cov8" title="1">out, err := os.Create(sic.toFilePath)
+        if err != nil </span><span class="cov8" title="1">{
+                return errors.New("output file create error")
+        }</span>
+        <span class="cov8" title="1">defer out.Close()
+
+        var errEnc error
+        if sic.toFormat == "jpg" </span><span class="cov8" title="1">{
+                opts := &amp;jpeg.Options{Quality: 80}
+                errEnc = jpeg.Encode(out, img, opts)
+        }</span> else<span class="cov8" title="1"> if sic.toFormat == "png" </span><span class="cov8" title="1">{
+                errEnc = png.Encode(out, img)
+        }</span> else<span class="cov8" title="1"> if sic.toFormat == "gif" </span><span class="cov8" title="1">{
+                opts := &amp;gif.Options{NumColors: 256}
+                errEnc = gif.Encode(out, img, opts)
+        }</span>
+        <span class="cov8" title="1">if errEnc != nil </span><span class="cov0" title="0">{
+                return errors.New("input file encode error")
+        }</span>
+        <span class="cov8" title="1">return nil</span>
+}
+</pre>
+		
+		</div>
+	</body>
+	<script>
+	(function() {
+		var files = document.getElementById('files');
+		var visible;
+		files.addEventListener('change', onChange, false);
+		function select(part) {
+			if (visible)
+				visible.style.display = 'none';
+			visible = document.getElementById(part);
+			if (!visible)
+				return;
+			files.value = part;
+			visible.style.display = 'block';
+			location.hash = part;
+		}
+		function onChange() {
+			select(files.value);
+			window.scrollTo(0, 0);
+		}
+		if (location.hash != "") {
+			select(location.hash.substr(1));
+		}
+		if (!visible) {
+			select("file0");
+		}
+	})();
+	</script>
+</html>

@@ -11,7 +11,6 @@ import (
 	"image/gif"
 	"image/jpeg"
 	"image/png"
-	"log"
 	"os"
 	"path/filepath"
 )
@@ -93,7 +92,6 @@ func convert(img image.Image, dest, format string) error {
 		err = gif.Encode(out, img, nil)
 	}
 
-	log.Print("asdfasdfsdf")
 	if err != nil {
 		return fmt.Errorf("convert: %s", err.Error())
 	}

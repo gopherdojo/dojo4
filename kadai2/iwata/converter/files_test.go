@@ -24,7 +24,7 @@ func newMockConvertOption(format string) converter.ConvertOption {
 
 func filePathes(files []string) []string {
 	var goLogoDir = "../test/fixtures/images/Go-Logo"
-	var pathes []string
+	pathes := make([]string, 0, len(files))
 	for _, f := range files {
 		pathes = append(pathes, fmt.Sprintf("%s/%s", goLogoDir, f))
 	}

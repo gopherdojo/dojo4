@@ -37,6 +37,7 @@ type Result struct {
 // SetConvertFormat 変換元画像フォーマットと変換後画像フォーマットを指定します。
 // Specify the source image format and the converted image format.
 func (ic *ImgConverter) SetConvertFormat(fromFormat string, toFormat string) error {
+	ic.setFormat = false
 	if fromFormat == toFormat {
 		return errors.New("The same value must not be specified for fromFormat and toFormat")
 	}
@@ -78,9 +79,9 @@ func (ic *ImgConverter) Convert(dir string) ([]Result, error) {
 				sic.fromFilePath = path
 				sic.toFilePath = newFileName + "." + ic.toFormat
 				sic.toFormat = ic.toFormat
-				err := sic.convertTo()
-				if err != nil {
-					rs = append(rs, Result{Msg: path + " -> " + newFileName + "." + ic.toFormat, Err: err})
+				errConv := sic.convertTo()
+				if errConv != nil {
+					rs = append(rs, Result{Msg: path + " -> " + newFileName + "." + ic.toFormat, Err: errConv})
 				} else {
 					rs = append(rs, Result{Msg: path + " -> " + newFileName + "." + ic.toFormat, Err: nil})
 				}
@@ -137,7 +138,7 @@ func (sic *singleImgConverter) convertTo() error {
 		errEnc = gif.Encode(out, img, opts)
 	}
 	if errEnc != nil {
-		return errors.New("input file decode error")
+		return errors.New("input file encode error")
 	}
 	return nil
 }

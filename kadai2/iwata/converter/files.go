@@ -37,7 +37,14 @@ func (c *Converter) ConvertFiles(files []string) error {
 	for _, f := range files {
 		f := f
 		eg.Go(func() error {
-			return c.convert(f)
+			dist, err := c.convert(f)
+			if err != nil {
+				return err
+			}
+			c.mu.Lock()
+			fmt.Fprintf(c.out, "Converted %s to %s\n", f, dist)
+			c.mu.Unlock()
+			return nil
 		})
 	}
 
@@ -48,10 +55,10 @@ func (c *Converter) ConvertFiles(files []string) error {
 	return nil
 }
 
-func (c *Converter) convert(f string) (err error) {
+func (c *Converter) convert(f string) (dist string, err error) {
 	src, err := os.Open(f)
 	if err != nil {
-		return fmt.Errorf("Failed to open %s: %s", f, err)
+		return "", fmt.Errorf("Failed to open %s: %s", f, err)
 	}
 	defer func() {
 		if cerr := src.Close(); cerr != nil && err == nil {
@@ -61,13 +68,13 @@ func (c *Converter) convert(f string) (err error) {
 
 	cv, err := c.resolveConverter(src)
 	if err != nil {
-		return fmt.Errorf("Failed to resolve converter about %s: %s", f, err)
+		return "", fmt.Errorf("Failed to resolve converter about %s: %s", f, err)
 	}
 
-	dist := distName(f, c.opt.ToFormat())
+	dist = distName(f, c.opt.ToFormat())
 	df, err := os.Create(dist)
 	if err != nil {
-		return fmt.Errorf("Failed to create a %s: %s", dist, err)
+		return "", fmt.Errorf("Failed to create a %s: %s", dist, err)
 	}
 	defer func() {
 		if cerr := df.Close(); cerr != nil && err == nil {
@@ -76,13 +83,10 @@ func (c *Converter) convert(f string) (err error) {
 	}()
 
 	if err := cv.convert(df); err != nil {
-		return fmt.Errorf("Failed to convert %s to %s: %s", f, dist, err)
+		return "", fmt.Errorf("Failed to convert %s to %s: %s", f, dist, err)
 	}
-	c.mu.Lock()
-	fmt.Fprintf(c.out, "Converted %s to %s\n", f, dist)
-	c.mu.Unlock()
 
-	return nil
+	return
 }
 
 func distName(f, toExt string) string {

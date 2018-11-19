@@ -18,7 +18,12 @@ func SearchFile(rootDir, from, to string) []string {
 	for _, p := range processingPaths {
 		e := filepath.Ext(p)
 		np := p[:len(p)-len(e)] + to
-		processedPaths = append(processedPaths, convFile(p, np, to))
+
+		pp, err := convFile(p, np, to)
+		if err != nil {
+			log.Fatal(err)
+		}
+		processedPaths = append(processedPaths, pp)
 		os.Remove(p)
 	}
 
@@ -73,24 +78,21 @@ func validateIfConvNeeded(path, from, to string) bool {
 }
 
 //convFile : 変換を実行する
-func convFile(path, newPath, toExt string) string {
+func convFile(path, newPath, toExt string) (string, error) {
 	file, err := os.Open(path)
 	if err != nil {
-		fmt.Println("open failed")
-		log.Fatal(err)
+		return newPath, fmt.Errorf("Original file open failed. Path: %s", path)
 	}
 	defer file.Close()
 
 	decoded, _, err := image.Decode(file)
 	if err != nil {
-		fmt.Println("decode failed")
-		log.Fatal(err)
+		return newPath, fmt.Errorf("Original file decode failed. Path: %s", path)
 	}
 
 	out, err := os.Create(newPath)
 	if err != nil {
-		fmt.Println("create failed")
-		log.Fatal(err)
+		return newPath, fmt.Errorf("New empty file creation failed. Path: %s", newPath)
 	}
 	defer out.Close()
 
@@ -110,14 +112,13 @@ func convFile(path, newPath, toExt string) string {
 		}
 	default:
 		{
-			log.Fatal("Can't generate converter: illegal format")
+			return newPath, fmt.Errorf("Can't convert to illegal format: %s", toExt)
 		}
 	}
 
 	if err := c.convimg(); err != nil {
-		fmt.Println("encode failed")
-		log.Fatal(err)
+		return newPath, fmt.Errorf("Encode failed from %s to %s", path, newPath)
 	}
 
-	return newPath
+	return newPath, nil
 }

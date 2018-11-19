@@ -34,7 +34,9 @@ var wg = sync.WaitGroup{}
 func main() {
 	bindFlags()
 	directory := os.Args[len(os.Args)-1]
-	analyzeFiles(directory)
+	if err = analyzeFiles(directory); err != nil {
+		log.Println(err)
+	}
 }
 
 func bindFlags() {
@@ -43,19 +45,21 @@ func bindFlags() {
 	flag.Parse()
 }
 
-func analyzeFiles(directory string) {
+func analyzeFiles(directory string) error {
 	files, err := ioutil.ReadDir(directory) // Get all file information in directory
 	if err != nil {
-		panic(err)
+		return err
 	}
 	for _, fileInfo := range files {
 		file, err := os.Open(directory + "/" + fileInfo.Name()) // Read file
 		if err != nil {
-			panic(err)
+			return err
 		}
 		wg.Add(1)
 		go func(file *os.File) {
-			converter.ConvertImg(file, directory, afterFormat)
+			if err := converter.ConvertImg(file, directory, afterFormat); err != nil {
+				return err
+			}
 			wg.Done()
 		}(file)
 	}

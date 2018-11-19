@@ -1,6 +1,7 @@
 package converter_test
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
 	"os"
@@ -18,7 +19,7 @@ func (o *mockConvertOption) ToFormat() string {
 	return o.format
 }
 
-func newMockConvertOption(format string) converter.ConvertOption {
+func newMockConvertOption(format string) converter.Option {
 	return &mockConvertOption{format}
 }
 
@@ -34,7 +35,7 @@ func filePathes(files []string) []string {
 func TestConvertFiles(t *testing.T) {
 	type args struct {
 		files []string
-		c     converter.ConvertOption
+		c     converter.Option
 	}
 	tests := []struct {
 		name         string
@@ -88,7 +89,9 @@ func TestConvertFiles(t *testing.T) {
 	for _, tt := range tests {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
-			err := converter.ConvertFiles(filePathes(tt.args.files), tt.args.c)
+			outStream := new(bytes.Buffer)
+			conv := converter.NewConverter(outStream, tt.args.c)
+			err := conv.ConvertFiles(filePathes(tt.args.files))
 			testutil.ContainsError(t, err, tt.wantErr, "converter.ConvertFiles() Error")
 			for _, f := range filePathes(tt.createdFiles) {
 				testFileExist(t, f)

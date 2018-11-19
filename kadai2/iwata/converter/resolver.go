@@ -7,29 +7,24 @@ import (
 	"strings"
 )
 
-// ConvertOption is an interface for converter
-type ConvertOption interface {
-	ToFormat() string
-}
-
-func resolveConverter(src io.Reader, opt ConvertOption) (Converter, error) {
+func (c *Converter) resolveConverter(src io.Reader) (imgConverter, error) {
 	img, _, err := image.Decode(src)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to decode: %s", err)
 	}
 
-	to := strings.ToLower(opt.ToFormat())
-	var c Converter
+	to := strings.ToLower(c.opt.ToFormat())
+	var ic imgConverter
 	switch to {
 	case "jpeg", "jpg":
-		c = &jpgConverter{img}
+		ic = &jpgConverter{img}
 	case "png":
-		c = &pngConverter{img}
+		ic = &pngConverter{img}
 	case "gif":
-		c = &gifConverter{img}
+		ic = &gifConverter{img}
 	default:
-		return nil, fmt.Errorf("%s is not supported format", opt.ToFormat())
+		return nil, fmt.Errorf("%s is not supported format", c.opt.ToFormat())
 	}
 
-	return c, nil
+	return ic, nil
 }

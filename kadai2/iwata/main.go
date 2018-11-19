@@ -22,7 +22,8 @@ func main() {
 		log.Fatal(err)
 	}
 
-	if err := converter.ConvertFiles(files, c); err != nil {
+	conv := converter.NewConverter(os.Stdout, c)
+	if err := conv.ConvertFiles(files); err != nil {
 		log.Fatal(err)
 	}
 

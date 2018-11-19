@@ -16,7 +16,7 @@ func ContainsError(t *testing.T, gotErr, wantErr error, msg string) {
 		t.Fatalf("%s: got [%s] error, but want nil", msg, gotErr)
 	}
 
-	if strings.Contains(gotErr.Error(), wantErr.Error()) == false {
+	if !strings.Contains(gotErr.Error(), wantErr.Error()) {
 		t.Errorf("%s: [%s] not contains [%s]", msg, gotErr, wantErr)
 	}
 }

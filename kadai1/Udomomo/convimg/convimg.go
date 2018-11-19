@@ -11,13 +11,27 @@ import (
 
 //SearchFile : searchFile関数が出力する変換後のパスを貯めておき、返り値として返す。
 func SearchFile(rootDir, from, to string) []string {
+	processingPaths := make([]string, 0)
+	processingPaths = searchFile(rootDir, from, to, processingPaths)
+
 	processedPaths := make([]string, 0)
-	processedPaths = searchFile(rootDir, from, to, processedPaths)
+	for _, p := range processingPaths {
+		e := filepath.Ext(p)
+		np := p[:len(p)-len(e)] + to
+		processedPaths = append(processedPaths, convFile(p, np))
+		os.Remove(p)
+	}
+
+	//os.Remove後の結果はユニットテストしづらいので、ここで簡易的に確認する
+	if len(processingPaths) != len(processingPaths) {
+		fmt.Println("len of conv results is wrong")
+		os.Exit(1)
+	}
 	return processedPaths
 }
 
 //searchFile : rootDirにあるファイルの一覧を探索。ディレクトリがあれば再帰処理する。
-func searchFile(rootDir, from, to string, processedPaths []string) []string {
+func searchFile(rootDir, from, to string, processingPaths []string) []string {
 
 	files, err := ioutil.ReadDir(rootDir)
 	if err != nil {
@@ -27,37 +41,35 @@ func searchFile(rootDir, from, to string, processedPaths []string) []string {
 	for _, file := range files {
 		path := filepath.Join(rootDir, file.Name())
 		if file.IsDir() {
-			processedPaths = searchFile(path, from, to, processedPaths)
+			processingPaths = searchFile(path, from, to, processingPaths)
 			continue
 		}
 
-		willChange, newPath := generateNewExt(path, from, to)
-		if willChange == false {
+		willConv := validateIfConvNeeded(path, from, to)
+		if willConv == false {
 			continue
 		}
 
-		processed := convFile(path, newPath)
-		processedPaths = append(processedPaths, processed)
-		os.Remove(path)
+		processingPaths = append(processingPaths, path)
 	}
-	return processedPaths
+	return processingPaths
 }
 
 //generateNewExt : 変換が必要な場合、変換後のパスを生成して返す
-func generateNewExt(path, from, to string) (willConv bool, newPath string) {
+func validateIfConvNeeded(path, from, to string) bool {
 	ext := filepath.Ext(path)
 
 	//変換したい拡張子でなければ何もしない
 	if ext != from {
-		return false, path
+		return false
 	}
 
 	//変換する必要がなければ何もしない
 	if from == to {
-		return false, path
+		return false
 	}
 
-	return true, path[:len(path)-len(ext)] + to
+	return true //path[:len(path)-len(ext)] + to
 }
 
 //convFile : 変換を実行する

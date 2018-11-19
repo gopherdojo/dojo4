@@ -12,10 +12,20 @@ const fileName = "img.jpg"
 var filePath = fmt.Sprintf("%s/%s", dirPath, fileName)
 
 func TestChangeExt(t *testing.T) {
-	expect := "/path/hello.git"
-	actual := changeExt("/path/hello.jpg", "git")
-	if actual != expect {
-		t.Errorf(`expect="%s", actual="%s"`, expect, actual)
+	testCases := []struct {
+		ext string // 変換先のフォーマット
+		in  string
+		out string
+	}{
+		{"gif", "/path/hello.jpg", "/path/hello.gif"},
+		{"png", "/path/hello.jpg", "/path/hello.png"},
+		{"png", "/path/hello.test.jpg", "/path/hello.test.png"},
+	}
+	for _, tt := range testCases {
+		actual := changeExt(tt.in, tt.ext)
+		if actual != tt.out {
+			t.Errorf(`expect="%s", actual="%s"`, tt.out, actual)
+		}
 	}
 }
 
@@ -36,6 +46,30 @@ func TestFileWalk(t *testing.T) {
 	}
 }
 
+func TestDecode(t *testing.T) {
+	i, err := decode(filePath, "jpg")
+	if err != nil {
+		t.Error(err.Error())
+	}
+	if i == nil {
+		t.Error("imgが見つかりません")
+	}
+}
+
+func TestConvert(t *testing.T) {
+	dest := changeExt(filePath, "gif")
+	img, err := decode(filePath, "jpg")
+	if err != nil {
+		t.Error(err)
+	}
+	err = convert(img, dest, "git")
+	if err != nil {
+		t.Error(err)
+	}
+	defer os.Remove(dest)
+}
+
+// jpgをpng, gifに変換してみる
 func TestConverts(t *testing.T) {
 	destFormats := []string{"png", "gif"}
 	for _, f := range destFormats {

@@ -60,7 +60,7 @@ $ make test
 
 ## コマンド使い方
 ```
-$./bin/kadai1 [options] [directories]
+$./bin/kadai2 [options] [directories]
 ```
 
 ### オプション
@@ -74,7 +74,7 @@ $./bin/kadai1 [options] [directories]
 
 ### 例
 ```
-$./bin/kadai1 -i jpg -o png fixtures
+$./bin/kadai2 -i jpg -o png fixtures
 ```
 
 ## Godoc
@@ -82,4 +82,4 @@ $./bin/kadai1 -i jpg -o png fixtures
 $godoc -http=:6060
 ```
 以下のURLで読めます。
-`http://localhost:6060/pkg/github.com/gopherdojo/dojo4/kadai1/phamvanhung2e123/converter`
+`http://localhost:6060/pkg/github.com/gopherdojo/dojo4/kadai2/phamvanhung2e123/converter`

@@ -3,9 +3,16 @@ package converter
 import (
 	"fmt"
 	"image"
+	"image/gif"
+	"image/jpeg"
+	"image/png"
 	"io"
 	"strings"
 )
+
+type imgConverter interface {
+	convert(dist io.Writer) error
+}
 
 func (c *Converter) resolveConverter(src io.Reader) (imgConverter, error) {
 	img, _, err := image.Decode(src)
@@ -27,4 +34,28 @@ func (c *Converter) resolveConverter(src io.Reader) (imgConverter, error) {
 	}
 
 	return ic, nil
+}
+
+type pngConverter struct {
+	org image.Image
+}
+
+func (c pngConverter) convert(dist io.Writer) error {
+	return png.Encode(dist, c.org)
+}
+
+type jpgConverter struct {
+	org image.Image
+}
+
+func (c jpgConverter) convert(dist io.Writer) error {
+	return jpeg.Encode(dist, c.org, nil)
+}
+
+type gifConverter struct {
+	org image.Image
+}
+
+func (c gifConverter) convert(dist io.Writer) error {
+	return gif.Encode(dist, c.org, nil)
 }

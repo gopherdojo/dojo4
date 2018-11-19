@@ -13,7 +13,7 @@ type Option interface {
 	FromFormat() string
 }
 
-// Files filter files by an extention
+// Files filter files by an extension
 func Files(c Option) ([]string, error) {
 	var files []string
 	ext := fmt.Sprintf(".%s", c.FromFormat())

@@ -26,7 +26,7 @@ func newMockOption(dir, format string) filter.Option {
 }
 
 func TestFiles(t *testing.T) {
-	var goLogoDir string = "../test/fixtures/images/Go-Logo"
+	var goLogoDir = "../test/fixtures/images/Go-Logo"
 
 	type args struct {
 		c filter.Option

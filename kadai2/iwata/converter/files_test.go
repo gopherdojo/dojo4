@@ -23,7 +23,7 @@ func newMockConvertOption(format string) converter.ConvertOption {
 }
 
 func filePathes(files []string) []string {
-	var goLogoDir string = "../test/fixtures/images/Go-Logo"
+	var goLogoDir = "../test/fixtures/images/Go-Logo"
 	var pathes []string
 	for _, f := range files {
 		pathes = append(pathes, fmt.Sprintf("%s/%s", goLogoDir, f))
@@ -43,9 +43,24 @@ func TestConvertFiles(t *testing.T) {
 		createdFiles []string
 	}{
 		{"empty files", args{[]string{}, newMockConvertOption("jpg")}, nil, []string{}},
-		{"not exits files", args{[]string{"hoge.jpg", "fuga.png"}, newMockConvertOption("gif")}, errors.New("Failed to open"), []string{}},
-		{"not support format", args{[]string{"JPG/Go-Logo_Aqua.jpg"}, newMockConvertOption("svg")}, errors.New("svg is not supported format"), []string{}},
-		{"cannot decode file", args{[]string{"EPS/Go-Logo_Versions.eps"}, newMockConvertOption("png")}, errors.New("Failed to decode"), []string{}},
+		{
+			"not exits files",
+			args{[]string{"hoge.jpg", "fuga.png"}, newMockConvertOption("gif")},
+			errors.New("Failed to open"),
+			[]string{},
+		},
+		{
+			"not support format",
+			args{[]string{"JPG/Go-Logo_Aqua.jpg"}, newMockConvertOption("svg")},
+			errors.New("svg is not supported format"),
+			[]string{},
+		},
+		{
+			"cannot decode file",
+			args{[]string{"EPS/Go-Logo_Versions.eps"}, newMockConvertOption("png")},
+			errors.New("Failed to decode"),
+			[]string{},
+		},
 		{"convert to png", args{[]string{
 			"JPG/Go-Logo_Black.jpg",
 			"JPG/Go-Logo_Yellow.jpg",
@@ -71,6 +86,7 @@ func TestConvertFiles(t *testing.T) {
 		}},
 	}
 	for _, tt := range tests {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			err := converter.ConvertFiles(filePathes(tt.args.files), tt.args.c)
 			testutil.ContainsError(t, err, tt.wantErr, "converter.ConvertFiles() Error")

@@ -8,11 +8,12 @@ import (
 func ContainsError(t *testing.T, gotErr, wantErr error, msg string) {
 	t.Helper()
 
-	if gotErr == nil && wantErr == nil {
+	switch {
+	case gotErr == nil && wantErr == nil:
 		return
-	} else if gotErr == nil {
+	case gotErr == nil:
 		t.Fatalf("%s: want [%s] error, but got nil", msg, wantErr)
-	} else if wantErr == nil {
+	case wantErr == nil:
 		t.Fatalf("%s: got [%s] error, but want nil", msg, gotErr)
 	}
 

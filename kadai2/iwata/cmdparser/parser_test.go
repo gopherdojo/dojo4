@@ -18,7 +18,7 @@ func cmdArgs(cmd string) []string {
 
 func TestCmdConfig_SrcDir(t *testing.T) {
 	dir := "/hoge"
-	c := cmdparser.NewCmdConfig(dir, "jpg", "png")
+	c := cmdparser.NewConfig(dir, "jpg", "png")
 	if c.SrcDir() != dir {
 		t.Errorf("CmdConfig.SrcDir() = %s, want %s", c.SrcDir(), dir)
 	}
@@ -26,7 +26,7 @@ func TestCmdConfig_SrcDir(t *testing.T) {
 
 func TestCmdConfig_FromFormat(t *testing.T) {
 	from := "jpg"
-	c := cmdparser.NewCmdConfig("./", from, "png")
+	c := cmdparser.NewConfig("./", from, "png")
 	if c.FromFormat() != from {
 		t.Errorf("CmdConfig.FromFormat() = %s, want %s", c.FromFormat(), from)
 	}
@@ -34,7 +34,7 @@ func TestCmdConfig_FromFormat(t *testing.T) {
 
 func TestCmdConfig_ToFormat(t *testing.T) {
 	to := "gif"
-	c := cmdparser.NewCmdConfig("./", "jpg", to)
+	c := cmdparser.NewConfig("./", "jpg", to)
 	if c.ToFormat() != to {
 		t.Errorf("CmdConfig.ToFormat() = %s, want %s", c.ToFormat(), to)
 	}
@@ -45,11 +45,11 @@ func TestCmd_Parse(t *testing.T) {
 		name         string
 		cmd          string
 		wantStdError string
-		wantConfig   *cmdparser.CmdConfig
+		wantConfig   *cmdparser.Config
 		wantErr      error
 	}{
-		{"default options", "./", "", cmdparser.NewCmdConfig("./", "jpg", "png"), nil},
-		{"with valid options", "-from png -to gif ./", "", cmdparser.NewCmdConfig("./", "png", "gif"), nil},
+		{"default options", "./", "", cmdparser.NewConfig("./", "jpg", "png"), nil},
+		{"with valid options", "-from png -to gif ./", "", cmdparser.NewConfig("./", "png", "gif"), nil},
 		{"need only one argument", "./ ./", "", nil, errors.New("only one arg")},
 		{"same formats", "-from jpg -to jpg ./", "", nil, errors.New("Cannot set the same format")},
 		{"show help message", "-h", "Usage of", nil, errors.New("Failed to paser args")},

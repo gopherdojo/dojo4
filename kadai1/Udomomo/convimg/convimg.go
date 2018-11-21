@@ -28,9 +28,8 @@ func SearchFile(rootDir, from, to string) []string {
 	}
 
 	//os.Remove後の結果はユニットテストしづらいので、ここで簡易的に確認する
-	if len(processingPaths) != len(processingPaths) {
-		fmt.Println("len of conv results is wrong")
-		os.Exit(1)
+	if len(processingPaths) != len(processedPaths) {
+		log.Fatal("len of conv results is wrong")
 	}
 	return processedPaths
 }

@@ -12,7 +12,7 @@ type Questioner interface {
 	GetNewWord(level int) string
 }
 
-type constQuestioner struct {
+type questionContainer struct {
 	qs map[int][]string
 }
 
@@ -22,13 +22,13 @@ func NewQuestioner(data QuizData) Questioner {
 	for i := 1; i <= data.MaxLevel(); i++ {
 		qs[i] = data.WordsByLevel(i)
 	}
-	q := &constQuestioner{
+	q := &questionContainer{
 		qs: qs,
 	}
 	return q
 }
 
-func (q *constQuestioner) GetNewWord(level int) string {
+func (q *questionContainer) GetNewWord(level int) string {
 	rand.Seed(time.Now().UnixNano())
 	rand := rand.Intn(len(q.qs[level]))
 	// HACK ほんとはmap okを見た方がいいけど、省略

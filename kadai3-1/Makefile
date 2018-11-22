@@ -1,7 +1,6 @@
 .PHONY: deps
 deps:
 	go get github.com/golang/lint/golint
-	go get github.com/ameske/wordnik-go
 
 .PHONY: build
 build: 

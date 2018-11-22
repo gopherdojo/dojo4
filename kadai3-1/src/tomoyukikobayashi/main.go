@@ -44,7 +44,8 @@ func (c *CLI) Run(args []string) int {
 		return ExitError
 	}
 
-	fmt.Fprintf(c.outStream, "start game 60 sec\n")
+	// TOOD 長いことテスト固めたくないので外から与えるようにする
+	fmt.Fprintf(c.outStream, "start game 10 sec\n")
 	qCh, aCh, rCh := game.Run(10, c.inStream)
 
 	for {
@@ -55,7 +56,6 @@ func (c *CLI) Run(args []string) int {
 		}
 
 		fmt.Fprintf(c.outStream, ">")
-
 		a, progress := <-aCh
 		fmt.Fprintf(c.outStream, "%v\n", a)
 		if !progress {

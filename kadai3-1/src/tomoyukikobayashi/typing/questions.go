@@ -54,7 +54,7 @@ type Yaml struct {
 	Level3 []string `yaml:"Level3,flow"`
 }
 
-// TOOD NewGameでyamlの型とio.Reader(ファイル)渡してやる方が、Questionerが汎用になる
+// TOOD NewGameでinterfaceとio.Reader渡してやる方が、Questionerが汎用になる
 func (q *constQuestioner) loadWords() error {
 	cur, _ := os.Getwd()
 	// yamlファイルから語彙リストを読み出す

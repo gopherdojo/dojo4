@@ -12,6 +12,7 @@ const fileName = "img.jpg"
 var filePath = fmt.Sprintf("%s/%s", dirPath, fileName)
 
 func TestChangeExt(t *testing.T) {
+	t.Helper()
 	cases := []struct {
 		ext string // 変換先のフォーマット
 		in  string
@@ -24,7 +25,7 @@ func TestChangeExt(t *testing.T) {
 	for _, c := range cases {
 		actual := changeExt(c.in, c.ext)
 		if actual != c.out {
-			t.Errorf(`changeExt(%s, %s) => "%s", want "%s"`, c.in, c.ext, c.out, actual)
+			t.Fatalf(`changeExt(%s, %s) => "%s", want "%s"`, c.in, c.ext, c.out, actual)
 		}
 	}
 }

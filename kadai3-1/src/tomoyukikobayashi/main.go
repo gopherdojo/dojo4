@@ -15,9 +15,8 @@ import (
 
 // CLIのExitコード
 const (
-	ExitSuccess     = 0
-	ExitInvalidArgs = iota
-	ExitError       = iota
+	ExitSuccess = 0
+	ExitError   = 1
 )
 
 // Exitしてもテスト落ちない操作するようにエイリアスにしている
@@ -25,24 +24,47 @@ var exit = os.Exit
 
 // CLI テストしやすいようにCLIの出力先を差し替えられるようにしている
 type CLI struct {
+	inStream  io.Reader
 	outStream io.Writer
 	errStream io.Writer
 }
 
 // CLIツールのエントリーポイント
 func main() {
-	cli := &CLI{outStream: os.Stdout, errStream: os.Stderr}
+	cli := &CLI{inStream: os.Stdin, outStream: os.Stdout, errStream: os.Stderr}
 	exit(cli.Run(os.Args))
 }
 
 // Run テスト用に実行ロジックを切り出した内容
 func (c *CLI) Run(args []string) int {
 
-	q, err := typing.NewQuestioner()
-	fmt.Printf("%v %v", q, err)
+	game, err := typing.NewGame()
+	if err != nil {
+		fmt.Fprintf(c.outStream, "failed to initizalize game %v", err)
+		return ExitError
+	}
 
-	w, err := q.GetNewWord(1)
-	fmt.Printf("%v %v", w, err)
+	fmt.Fprintf(c.outStream, "start game 60 sec\n")
+	qCh, aCh, rCh := game.Run(10, c.inStream)
+
+	for {
+		q, progress := <-qCh
+		fmt.Fprintf(c.outStream, "%v\n", q)
+		if !progress {
+			break
+		}
+
+		fmt.Fprintf(c.outStream, ">")
+
+		a, progress := <-aCh
+		fmt.Fprintf(c.outStream, "%v\n", a)
+		if !progress {
+			break
+		}
+	}
+
+	r := <-rCh
+	fmt.Fprintf(c.outStream, "clear %v miss %v\n", r[0], r[1])
 
 	return ExitSuccess
 }

@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"os"
 
 	imageconvert "github.com/YoheiMiyamoto/dojo4/kadai1/yoheimiyamoto/image-convert"
 )
@@ -20,6 +21,7 @@ func main() {
 
 	err := imageconvert.Converts(*dirPath, *srcFormat, *destFormat)
 	if err != nil {
-		panic(err)
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
 	}
 }

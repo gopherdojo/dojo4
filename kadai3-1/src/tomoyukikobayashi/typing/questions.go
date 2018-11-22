@@ -47,8 +47,8 @@ func (q *constQuestioner) GetNewWord(level int) string {
 	return q.qs[level][rand]
 }
 
-// Yaml HACK 使用しているパッケージの使用でしょうがなくpublicにしている
-type Yaml struct {
+// QuizSource HACK 使用しているパッケージの使用でしょうがなくpublicにしている
+type QuizSource struct {
 	Level1 []string `yaml:"Level1,flow"`
 	Level2 []string `yaml:"Level2,flow"`
 	Level3 []string `yaml:"Level3,flow"`
@@ -63,17 +63,17 @@ func (q *constQuestioner) loadWords() error {
 		return err
 	}
 
-	var y Yaml
-	err = yamler.Unmarshal([]byte(data), &y)
+	var s QuizSource
+	err = yamler.Unmarshal([]byte(data), &s)
 	if err != nil {
 		return err
 	}
 
 	// TODO レベルは今の所少ないのでとりあえずベタがき
 	// yamlの構成工夫 or interfaceとしてレベル別に取る関数生やして動的に撮れる方が良い
-	q.qs[1] = y.Level1
-	q.qs[2] = y.Level2
-	q.qs[3] = y.Level3
+	q.qs[1] = s.Level1
+	q.qs[2] = s.Level2
+	q.qs[3] = s.Level3
 
 	return nil
 }

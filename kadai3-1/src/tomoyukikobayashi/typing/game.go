@@ -9,13 +9,14 @@ import (
 
 // Game タイピングゲームを制御するロジックを返す
 type Game interface {
-	Run(int, io.Reader) (question <-chan string,
-		answer <-chan string, result <-chan [2]int)
+	Run() (question <-chan string, answer <-chan string, result <-chan [2]int)
 }
 
 type constGame struct {
 	Questioner
-	// NOTE コンテキストに状態格納しようとしたがコピーして作り直すから、途中で書き換えてもルーチンをまたいでシェアされない模様
+	input   io.Reader
+	timeout int
+	// NOTE コンテキストにゲーム状態格納しようとしたがコピーして作り直すから、途中で書き換えてもルーチンをまたいでシェアされない(親子関係で)
 	// 結局共有変数に書いていることになるので、脆弱感がすごい
 	clear       int
 	miss        int
@@ -23,30 +24,33 @@ type constGame struct {
 }
 
 // NewGame Gameのコンストラクタです
-func NewGame() (Game, error) {
+func NewGame(timeout int, input io.Reader) (Game, error) {
 	q, err := NewQuestioner()
 	if err != nil {
 		return nil, err
 	}
-	return &constGame{Questioner: q}, nil
+	return &constGame{Questioner: q, timeout: timeout, input: input}, nil
 }
 
 // Run ゲームを開始する
-func (c *constGame) Run(timeout int, input io.Reader) (<-chan string,
-	<-chan string, <-chan [2]int) {
-	sc := bufio.NewScanner(input)
+func (c *constGame) Run() (<-chan string, <-chan string, <-chan [2]int) {
+	tc := time.Duration(c.timeout) * time.Second
+	// NOTE defer cancel() cancelするとDone条件閉じてゲーム終わっちゃう
+	ctx, _ := context.WithTimeout(context.Background(), tc)
 
-	qCh := make(chan string)
-	aCh := make(chan string)
+	// TODO routine数にあわせてサイズ調整は死ねるのでonce.DO が使えるかも
 	routines := 2
 	rCh := make(chan [2]int, routines)
 
-	bc := context.Background()
-	tc := time.Duration(timeout) * time.Second
-	ctx, _ := context.WithTimeout(bc, tc)
-	// NOTE defer cancel() defer cancelするとDone条件閉じてる
+	qCh := c.question(ctx, rCh)
+	aCh := c.answer(ctx, rCh)
 
-	// TODO 読みづらいので関数に切り出す
+	return qCh, aCh, rCh
+}
+
+// 問題をqChに送る
+func (c *constGame) question(ctx context.Context, rCh chan<- [2]int) <-chan string {
+	qCh := make(chan string)
 	go func() {
 		for {
 			word := c.GetNewWord(c.nextLevel())
@@ -54,7 +58,6 @@ func (c *constGame) Run(timeout int, input io.Reader) (<-chan string,
 			c.currentWord = word
 			select {
 			case <-ctx.Done():
-				// TODO once.DO が使えるかも
 				rCh <- [2]int{c.clear, c.miss}
 				close(qCh)
 				return
@@ -63,8 +66,13 @@ func (c *constGame) Run(timeout int, input io.Reader) (<-chan string,
 			}
 		}
 	}()
+	return qCh
+}
 
-	// 読み込みしてaChに送る
+// 回答をストリームから読み込みしてaChに送る
+func (c *constGame) answer(ctx context.Context, rCh chan<- [2]int) <-chan string {
+	sc := bufio.NewScanner(c.input)
+	aCh := make(chan string)
 	go func() {
 		for {
 			if sc.Scan() {
@@ -78,6 +86,7 @@ func (c *constGame) Run(timeout int, input io.Reader) (<-chan string,
 			}
 
 			select {
+			// contextがtimeoutしたら結果を返却
 			case <-ctx.Done():
 				rCh <- [2]int{c.clear, c.miss}
 				close(aCh)
@@ -87,8 +96,7 @@ func (c *constGame) Run(timeout int, input io.Reader) (<-chan string,
 			}
 		}
 	}()
-
-	return qCh, aCh, rCh
+	return aCh
 }
 
 // HACK 成功した回数に応じて、使う語彙のレベルを決める。ここは決め打ちで書いてる
@@ -102,6 +110,7 @@ func (c *constGame) nextLevel() int {
 	return 3
 }
 
+// ワードの比較
 func (c *constGame) isCorrect(word string) bool {
 	return c.currentWord == word
 }

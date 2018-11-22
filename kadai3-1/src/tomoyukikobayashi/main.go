@@ -6,6 +6,7 @@ used in CLI intrerfaces.
 package main
 
 import (
+	"flag"
 	"fmt"
 	"io"
 	"os"
@@ -15,8 +16,9 @@ import (
 
 // CLIのExitコード
 const (
-	ExitSuccess = 0
-	ExitError   = 1
+	ExitSuccess     = 0
+	ExitError       = 1
+	ExitInvalidArgs = 2
 )
 
 // Exitしてもテスト落ちない操作するようにエイリアスにしている
@@ -38,15 +40,25 @@ func main() {
 // Run テスト用に実行ロジックを切り出した内容
 func (c *CLI) Run(args []string) int {
 
-	game, err := typing.NewGame()
+	flags := flag.NewFlagSet("typing", flag.ContinueOnError)
+	flags.SetOutput(c.errStream)
+
+	var t int
+	flags.IntVar(&t, "t", 30, "time to play (second) default=30s")
+
+	if err := flags.Parse(args[1:]); err != nil {
+		return ExitInvalidArgs
+	}
+
+	game, err := typing.NewGame(t, c.inStream)
 	if err != nil {
 		fmt.Fprintf(c.outStream, "failed to initizalize game %v", err)
 		return ExitError
 	}
 
 	// TOOD 長いことテスト固めたくないので外から与えるようにする
-	fmt.Fprintf(c.outStream, "start game 10 sec\n")
-	qCh, aCh, rCh := game.Run(10, c.inStream)
+	fmt.Fprintf(c.outStream, "start game %d sec\n", t)
+	qCh, aCh, rCh := game.Run()
 
 	for {
 		q, progress := <-qCh

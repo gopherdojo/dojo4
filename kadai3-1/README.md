@@ -1,19 +1,25 @@
-GoImageConverter
+GoTypingGame
 =====
 
 # Overview
 
-TODO
+最高にいけてる楽しいタイピングゲーム
+Goで書かれている
 
 # SetUp
 
-下記のようにコマンドを叩くと、実行形式のTODOファイルが生成されます
+下記のようにコマンドを叩くと、実行形式のtypeファイルが生成されます
 ```
-cd kadai2
 make build
 ```
 
 # Usage
-
-
-# 課題に対するアプローチ
+```
+type [OPTION]
+```
+オプション
+```
+Usage of typing:
+  -t int
+    	time to play (second) default=30s (default 30)
+```

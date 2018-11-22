@@ -24,11 +24,13 @@ type constGame struct {
 }
 
 // NewGame Gameのコンストラクタです
-func NewGame(timeout int, input io.Reader) (Game, error) {
-	q, err := NewQuestioner()
+func NewGame(timeout int, source io.Reader, input io.Reader) (Game, error) {
+	// クイズデータを読み込む
+	d, err := NewQuizData(source)
 	if err != nil {
 		return nil, err
 	}
+	q := NewQuestioner(d)
 	return &constGame{Questioner: q, timeout: timeout, input: input}, nil
 }
 
@@ -99,6 +101,11 @@ func (c *constGame) answer(ctx context.Context, rCh chan<- [2]int) <-chan string
 	return aCh
 }
 
+// ワードの比較
+func (c *constGame) isCorrect(word string) bool {
+	return c.currentWord == word
+}
+
 // HACK 成功した回数に応じて、使う語彙のレベルを決める。ここは決め打ちで書いてる
 func (c *constGame) nextLevel() int {
 	if c.clear < 10 {
@@ -108,9 +115,4 @@ func (c *constGame) nextLevel() int {
 		return 2
 	}
 	return 3
-}
-
-// ワードの比較
-func (c *constGame) isCorrect(word string) bool {
-	return c.currentWord == word
 }

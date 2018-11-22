@@ -10,8 +10,13 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"path/filepath"
 
 	"tomoyukikobayashi/typing"
+)
+
+const (
+	wordFile = "words.yaml"
 )
 
 // CLIのExitコード
@@ -50,13 +55,21 @@ func (c *CLI) Run(args []string) int {
 		return ExitInvalidArgs
 	}
 
-	game, err := typing.NewGame(t, c.inStream)
+	// yamlファイルから語彙リストを読み出す
+	cur, _ := os.Getwd()
+	file, err := os.Open(filepath.Join(cur, wordFile))
 	if err != nil {
 		fmt.Fprintf(c.outStream, "failed to initizalize game %v", err)
 		return ExitError
 	}
 
-	// TOOD 長いことテスト固めたくないので外から与えるようにする
+	// gameを動作させるインターフェイスを初期化
+	game, err := typing.NewGame(t, file, c.inStream)
+	if err != nil {
+		fmt.Fprintf(c.outStream, "failed to initizalize game %v", err)
+		return ExitError
+	}
+
 	fmt.Fprintf(c.outStream, "start game %d sec\n", t)
 	qCh, aCh, rCh := game.Run()
 

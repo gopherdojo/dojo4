@@ -2,17 +2,8 @@
 package typing
 
 import (
-	"io/ioutil"
 	"math/rand"
-	"os"
-	"path/filepath"
 	"time"
-
-	yamler "gopkg.in/yaml.v2"
-)
-
-const (
-	wordFile = "words.yaml"
 )
 
 // Questioner 質問で使うワードを提供します
@@ -26,54 +17,20 @@ type constQuestioner struct {
 }
 
 // NewQuestioner Questionerのコンストラクタ
-func NewQuestioner() (Questioner, error) {
+func NewQuestioner(data QuizData) Questioner {
+	qs := map[int][]string{}
+	for i := 1; i <= data.MaxLevel(); i++ {
+		qs[i] = data.WordsByLevel(i)
+	}
 	q := &constQuestioner{
-		qs: map[int][]string{},
+		qs: qs,
 	}
-	if err := q.loadWords(); err != nil {
-		return nil, err
-	}
-	return q, nil
-}
-
-func random(min int, max int) int {
-	rand.Seed(time.Now().UnixNano())
-	return rand.Intn(max-min) + min
+	return q
 }
 
 func (q *constQuestioner) GetNewWord(level int) string {
-	rand := random(1, len(q.qs[level]))
+	rand.Seed(time.Now().UnixNano())
+	rand := rand.Intn(len(q.qs[level]))
 	// HACK ほんとはmap okを見た方がいいけど、省略
 	return q.qs[level][rand]
-}
-
-// QuizSource HACK 使用しているパッケージの使用でしょうがなくpublicにしている
-type QuizSource struct {
-	Level1 []string `yaml:"Level1,flow"`
-	Level2 []string `yaml:"Level2,flow"`
-	Level3 []string `yaml:"Level3,flow"`
-}
-
-// TOOD NewGameでinterfaceとio.Reader渡してやる方が、Questionerが汎用になる
-func (q *constQuestioner) loadWords() error {
-	cur, _ := os.Getwd()
-	// yamlファイルから語彙リストを読み出す
-	data, err := ioutil.ReadFile(filepath.Join(cur, wordFile))
-	if err != nil {
-		return err
-	}
-
-	var s QuizSource
-	err = yamler.Unmarshal([]byte(data), &s)
-	if err != nil {
-		return err
-	}
-
-	// TODO レベルは今の所少ないのでとりあえずベタがき
-	// yamlの構成工夫 or interfaceとしてレベル別に取る関数生やして動的に撮れる方が良い
-	q.qs[1] = s.Level1
-	q.qs[2] = s.Level2
-	q.qs[3] = s.Level3
-
-	return nil
 }

@@ -3,8 +3,9 @@ package main
 import (
 	"flag"
 	"fmt"
+	"os"
 
-	imageconvert "github.com/YoheiMiyamoto/dojo4/kadai1/yoheimiyamoto/image-convert"
+	imageconvert "github.com/YoheiMiyamoto/dojo4/kadai2/yoheimiyamoto/image-convert"
 )
 
 func main() {
@@ -14,12 +15,15 @@ func main() {
 	flag.Parse()
 
 	if *destFormat == "" {
-		fmt.Println("destFormat is required")
+		fmt.Fprintln(os.Stdout, "destFormat is required")
+		os.Exit(1)
 		return
 	}
 
-	err := imageconvert.Converts(*dirPath, *srcFormat, *destFormat)
+	result, err := imageconvert.Converts(*dirPath, *srcFormat, *destFormat)
 	if err != nil {
-		panic(err)
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
 	}
+	fmt.Fprintln(os.Stdout, result)
 }

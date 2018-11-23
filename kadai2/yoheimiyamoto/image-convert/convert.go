@@ -17,18 +17,25 @@ import (
 
 // Converts ...
 // ディレクトリを探索して見つかったファイルをコンバート
-func Converts(dirPath, srcFormat, distFormat string) error {
-	return fileWalk(dirPath, srcFormat, func(path string) error {
+func Converts(dirPath, srcFormat, distFormat string) (string, error) {
+	var result string
+	err := fileWalk(dirPath, srcFormat, func(path string) error {
 		img, err := decode(path, srcFormat)
 		if err != nil {
 			return err
 		}
-
 		dest := changeExt(path, distFormat)
 		err = convert(img, dest, distFormat)
-		fmt.Printf("%s -> %s\n", path, dest)
-		return err
+		if err != nil {
+			return err
+		}
+		result += fmt.Sprintf("%s -> %s\n", path, dest)
+		return nil
 	})
+	if err != nil {
+		return "", err
+	}
+	return result, nil
 }
 
 // format引数で指定したフォーマットのファイルを探索
@@ -76,7 +83,7 @@ func decode(src, format string) (image.Image, error) {
 
 // コンバート
 func convert(img image.Image, dest, format string) error {
-	fmt.Printf("dest: %s", dest)
+	// fmt.Printf("dest: %s", dest)
 	out, err := os.Create(dest)
 	if err != nil {
 		return fmt.Errorf("convert: %s", err.Error())

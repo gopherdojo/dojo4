@@ -1,8 +1,3 @@
-// ディレクトリを指定する
-// 指定したディレクトリ以下のJPGファイルをPNGに変換（デフォルト）
-// ディレクトリ以下は再帰的に処理する
-// 変換前と変換後の画像形式を指定できる（オプション）
-
 package imageconvert
 
 import (
@@ -17,17 +12,24 @@ import (
 
 // Converts ...
 // ディレクトリを探索して見つかったファイルをコンバート
-func Converts(dirPath, srcFormat, distFormat string) error {
-	return fileWalk(dirPath, srcFormat, func(path string) error {
+func Converts(dirPath, srcFormat, distFormat string) (string, error) {
+	var result string
+	err := fileWalk(dirPath, srcFormat, func(path string) error {
 		img, err := decode(path, srcFormat)
 		if err != nil {
 			return err
 		}
 		dest := changeExt(path, distFormat)
 		err = convert(img, dest, distFormat)
-		fmt.Printf("%s -> %s\n", path, dest)
-		return err
+		if err != nil {
+			result += fmt.Sprintf("%s -> %s\n", path, dest)
+		}
+		return nil
 	})
+	if err != nil {
+		return "", err
+	}
+	return result, nil
 }
 
 // format引数で指定したフォーマットのファイルを探索

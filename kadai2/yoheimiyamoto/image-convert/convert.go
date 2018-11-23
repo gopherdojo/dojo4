@@ -6,6 +6,7 @@
 package imageconvert
 
 import (
+	"errors"
 	"fmt"
 	"image"
 	"image/gif"
@@ -13,6 +14,7 @@ import (
 	"image/png"
 	"os"
 	"path/filepath"
+	"strings"
 )
 
 // Converts ...
@@ -42,7 +44,7 @@ func Converts(dirPath, srcFormat, distFormat string) (string, error) {
 // 取得したファイルのパスを引数として 引数のfuncを実行
 func fileWalk(dirPath, format string, f func(string) error) error {
 	if f == nil {
-		panic("引数fは必須です")
+		return errors.New("引数fは必須です")
 	}
 	err := filepath.Walk(dirPath, func(path string, info os.FileInfo, err error) error {
 		if filepath.Ext(path) != fmt.Sprintf(".%s", format) {
@@ -108,5 +110,6 @@ func convert(img image.Image, dest, format string) error {
 
 // ファイルの拡張子を変更
 func changeExt(path, ext string) string {
-	return string(path[:len(path)-len(filepath.Ext(path))+1]) + ext
+	path = strings.TrimSuffix(path, filepath.Ext(path))
+	return fmt.Sprintf("%s.%s", path, ext)
 }

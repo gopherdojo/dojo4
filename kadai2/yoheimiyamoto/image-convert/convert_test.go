@@ -29,7 +29,6 @@ func TestChangeExt(t *testing.T) {
 		}
 	}
 }
-
 func TestFileWalk(t *testing.T) {
 	expect := filePath
 	var actual string
@@ -46,7 +45,6 @@ func TestFileWalk(t *testing.T) {
 		t.Errorf(`expect="%s", actual="%s"`, expect, actual)
 	}
 }
-
 func TestDecode(t *testing.T) {
 	i, err := decode(filePath, "jpg")
 	if err != nil {
@@ -74,7 +72,7 @@ func TestConvert(t *testing.T) {
 func TestConverts(t *testing.T) {
 	destFormats := []string{"png", "gif"}
 	for _, f := range destFormats {
-		err := Converts(dirPath, "jpg", f)
+		_, err := Converts(dirPath, "jpg", f)
 		if err != nil {
 			t.Errorf(err.Error())
 			return

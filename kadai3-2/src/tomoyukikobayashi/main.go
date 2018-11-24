@@ -14,6 +14,8 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
+
+	"golang.org/x/sync/errgroup"
 )
 
 // CLIのExitコード
@@ -23,7 +25,7 @@ const (
 	ExitInvalidArgs = 2
 )
 
-// HACK 雑に作ったので弱いバリデーション、パラメタ決め打ちとか、処理されないerrがある
+// HACK 雑に作ったので弱いバリデーション、パラメタ決め打ちと、処理されないエラーがある
 // mainに全部押し込んで、テストもない
 
 // CLIツールのエントリーポイント
@@ -36,6 +38,7 @@ func main() {
 	url := os.Args[1]
 	fmt.Printf("start to download %v\n", url)
 
+	/// Rangeアクセスの準備
 	// HEADで取れた情報から、対象のAccept-Ranges対応確認と、ファイルサイズの取得
 	hRes, err := http.Head(url)
 	if err != nil {
@@ -46,10 +49,14 @@ func main() {
 		fmt.Printf("range access does not supported")
 		os.Exit(ExitError)
 	}
+
+	/// 処理するプロセス数を決める
 	// HACK とりあえず決めうち、本当は環境or引数からProc数決めるのが良い
-	procs := 3
+	procs := 4
 	size, _ := strconv.Atoi(hRes.Header["Content-Length"][0])
 	fmt.Printf("donwload size %v, parallel %v", size, procs)
+
+	/// 一次ファイルを格納するフォルダの作成
 
 	// 一時ファイルを格納するディレクトリ名(とりあえずハッシュ)を決める
 	h := sha1.Sum([]byte(url))
@@ -86,38 +93,104 @@ func main() {
 			to = to + size%procs
 		}
 
-		// TODO ファイル存在確認して、いたらDLしない
-		// TOOD waitして最後にファイルを結合
-		// TOOD erros使う
-		dReq, _ := http.NewRequest("GET", url, nil)
-		dReq.Header.Set("Range", fmt.Sprintf("bytes=%d-%d", from, to))
-		dRes, _ := http.DefaultClient.Do(dReq)
-		buf, _ := ioutil.ReadAll(dRes.Body)
-		// TODO 存在とファイルサイズ確認 tmpフォルダ作成
-		fn := filepath.Join(dlTmp, strconv.FormatInt(int64(i), 10))
-		file, _ := os.Create(fn)
-		defer file.Close()
+		// 平行にDLをする
+		i := i + 1
+		eg.Go(func() error {
+			fn := filepath.Join(dlTmp, strconv.FormatInt(int64(i), 10))
 
-		_, _ = file.Write(buf)
+			// ファイルが存在していたらスキップする
+			// TODO 本当はファイルサイズがto - fromと一致するかも見た方が良い
+			if _, err := os.Stat(fn); err == nil {
+				return nil
+			}
+
+			// Rangeを指定してGETリクエスト作成
+			dReq, err := http.NewRequest("GET", url, nil)
+			if err != nil {
+				return err
+			}
+			dReq.Header.Set("Range", fmt.Sprintf("bytes=%d-%d", from, to))
+
+			// DLリクエスト
+			dRes, err := http.DefaultClient.Do(dReq)
+			if err != nil {
+				return err
+			}
+
+			// 取得したデータをBufに読み出し
+			buf, err := ioutil.ReadAll(dRes.Body)
+			if err != nil {
+				return err
+			}
+
+			// 分割ファイルの保存
+			file, err := os.Create(fn)
+			if err != nil {
+				return err
+			}
+			defer file.Close()
+
+			// TODO ここで落ちるとファイルが存在するけどDLできていないのにスキップしてしまう
+			_, err = file.Write(buf)
+			if err != nil {
+				return err
+			}
+
+			return nil
+		})
 
 		from = to + 1
 	}
-
-	// DLした部分ファイルを結合する
-	files := make([]io.Reader, procs)
-	for i := 0; i < procs; i++ {
-		file, _ := os.Open(filepath.Join(dlTmp, strconv.FormatInt(int64(i), 10)))
-		files[i] = file
+	// 全プロセスがDL終わるまで待つ
+	if err := eg.Wait(); err != nil {
+		fmt.Printf("error occurred while downloading %v", err)
+		os.Exit(ExitError)
 	}
 
-	reader := io.MultiReader(files...)
-	// TOOD urlから作る
-	file, _ := os.Create("out.jpg")
-	defer file.Close()
-	b, _ := ioutil.ReadAll(reader)
-	_, _ = file.Write(b)
+	/// DLした部分ファイルを結合する
 
-	// TODO tmpファイルの掃除
+	// 複数ファイルを一気に読み出すReaderを作成
+	files := make([]io.Reader, procs)
+	for i := 0; i < procs; i++ {
+		file, err := os.Open(filepath.Join(dlTmp, strconv.FormatInt(int64(i+1), 10)))
+		if err != nil {
+			fmt.Printf("error occurred while reading tmp file %v", err)
+			os.Exit(ExitError)
+		}
+		files[i] = file
+	}
+	reader := io.MultiReader(files...)
+	b, err := ioutil.ReadAll(reader)
+	if err != nil {
+		fmt.Printf("error occurred while creating dl file %v", err)
+		os.Exit(ExitError)
+	}
+
+	// deferをos.Existと同じブロックに置かないように無名関数にしている
+	// (defer使わないでシーケンシャルにやるのと変わらんなこれだと)
+	err = func() error {
+		/// tmpフォルダのゴミ掃除(失敗しても特に何もしない))
+		defer os.RemoveAll(dlTmp)
+
+		// ファイルを結合する
+		file, err := os.Create(filepath.Base(url))
+		if err != nil {
+			return err
+		}
+		defer file.Close()
+
+		_, err = file.Write(b)
+		if err != nil {
+			return err
+		}
+
+		return nil
+	}()
+
+	if err != nil {
+		fmt.Printf("error occurred while creating dl file %v", err)
+		os.Exit(ExitError)
+	}
 
 	os.Exit(ExitSuccess)
 }

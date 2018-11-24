@@ -19,9 +19,13 @@ func main() {
 		return
 	}
 
-	err := imageconvert.Converts(*dirPath, *srcFormat, *destFormat)
+	result, err := imageconvert.Converts(*dirPath, *srcFormat, *destFormat)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
 	}
+	// os.Stdout.Write([]byte("hello"))
+	// os.Stdout.Write([]byte(result))
+	fmt.Fprintf(os.Stdout, "hello")
+	fmt.Fprintf(os.Stdout, result)
 }

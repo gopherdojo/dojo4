@@ -3,8 +3,7 @@ CodeHexIsGod
 
 # Overview
 
-CodeHexさんくん
-すごいやという気持ちで写経したやつ
+CodeHex is God
 
 # SetUp
 
@@ -15,5 +14,5 @@ make build
 
 # Usage
 ```
-type [OPTION] URL
+codehexisgod [OPTION] URL
 ```

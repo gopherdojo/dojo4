@@ -62,6 +62,8 @@ func (c *CLI) Run(args []string) int {
 		fmt.Fprintf(c.outStream, "failed to initizalize game %v", err)
 		return ExitError
 	}
+	// クローズできなくても実害ないので、エラー処理は省略
+	defer file.Close()
 
 	// gameを動作させるインターフェイスを初期化
 	game, err := typing.NewGame(t, file, c.inStream)

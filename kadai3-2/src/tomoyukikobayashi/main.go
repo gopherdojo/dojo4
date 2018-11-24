@@ -75,7 +75,8 @@ func main() {
 		}
 	}
 
-	// goroutine起こして並列ダウンロード
+	/// goroutine起こして並列ダウンロード
+	var eg errgroup.Group
 	// bytes のレンジに指定するバイト位置
 	from, to := 0, 0
 	for i := 0; i < procs; i++ {

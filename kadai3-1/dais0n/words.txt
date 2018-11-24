@@ -1,0 +1,12 @@
+apple
+orange
+banana
+strawberry
+apricot
+persimmon
+kiwi fruit
+watermelon
+plum
+grape
+melon
+peach

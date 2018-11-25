@@ -9,11 +9,11 @@ go run main.go
 example
 
 ```bash
-> alias
-alias
+hoge
+hoge
 ### GOT IT!!!! ###
 
-> consequatur
-conseguatur
+fuga
+bar
 ### WRONG ###
 ```

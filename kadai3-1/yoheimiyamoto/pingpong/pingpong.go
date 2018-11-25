@@ -3,55 +3,70 @@ package pingpong
 import (
 	"bufio"
 	"fmt"
+	"io"
 	"os"
+	"time"
 )
 
 // Play ...
 // words -> 出題するワード一覧
-func Play(stdin, stdout *os.File, words []string) {
-	fmt.Println("ゲームスタート！\nゲームを途中で終了する場合はexitを入力してください。")
+func Play(w io.Writer, words []string) {
 	inputCh := make(chan string)
-	done := make(chan struct{})
-	var r result
-	input(os.Stdin, inputCh, done)
-	var count int
+	inputDone := make(chan struct{}, 1)
+	input(os.Stdin, inputCh, inputDone)
+
+	var s score
+
+	fmt.Fprintln(w, "ゲームスタート！")
+GAME:
 	for {
-		word := words[count]
-		fmt.Println(word)
+		// wordsをすべて回答したらゲームを終了させる
+		if s.count() == (len(words) - 1) {
+			break GAME
+		}
+
+		word := words[s.count()]
+		fmt.Fprintln(w, word)
 
 		select {
-		case a := <-inputCh:
-			if a == word {
-				fmt.Fprintln(stdout, "正解！")
-				r.addCorrect()
+		case i := <-inputCh:
+			if i == word {
+				fmt.Fprintln(w, "正解！")
+				s.addCorrect()
 			} else {
-				fmt.Fprintln(stdout, "不正解！")
-				r.addIncorrect()
+				fmt.Fprintln(w, "不正解！")
+				s.addIncorrect()
 			}
-			if count == (len(words) - 1) {
-				fmt.Println(r)
-				os.Exit(0)
-			}
-			count++
-		case <-done:
-			fmt.Fprintln(stdout, "終了します。")
-			fmt.Println(r)
-			os.Exit(0)
+		case <-time.After(5 * time.Second):
+			break GAME
 		}
 	}
+	close(inputDone) // inputのチャネルを閉じる
+	fmt.Fprintln(w, "タイムアウト。ゲーム終了")
+	fmt.Println(s.Result())
 }
 
 // 標準入力から受け取ったテキストをchチャネルに送信。
-// 標準入力から「exit」というワードを受け取った場合は、doneチャネルをcloseする。
-func input(stdin *os.File, ch chan<- string, done chan<- struct{}) {
+func input(stdin *os.File, ch chan<- string, done <-chan struct{}) {
 	scanner := bufio.NewScanner(stdin)
 	go func() {
 		for scanner.Scan() {
 			t := scanner.Text()
-			if t == "exit" {
-				close(done)
-			}
 			ch <- t
 		}
 	}()
+
+	// ゲームが終了した場合、inputも終了させる。
+	go func() {
+		select {
+		case <-done:
+			return
+		}
+	}()
+
+	// 上記を以下のようにgoroutine使わずに記述するとゲームがフリーズしてしまう理由が理解できていないです。
+	// select {
+	// case <-done:
+	// 	return
+	// }
 }

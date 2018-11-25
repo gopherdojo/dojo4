@@ -8,5 +8,5 @@ import (
 
 func main() {
 	words := []string{"one", "two", "three"}
-	pingpong.Play(os.Stdin, os.Stdout, words)
+	pingpong.Play(os.Stdin, words)
 }

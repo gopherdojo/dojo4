@@ -4,20 +4,19 @@ import (
 	"bufio"
 	"fmt"
 	"io"
-	"os"
 	"time"
 )
 
 // Play ...
 // words -> 出題するワード一覧
-func Play(w io.Writer, words []string) {
+func Play(r io.Reader, w io.Writer, words []string) {
 	inputCh := make(chan string)
 	inputDone := make(chan struct{}, 1)
-	input(os.Stdin, inputCh, inputDone)
+	input(r, inputCh, inputDone)
 
 	var s score
 
-	fmt.Fprintln(w, "ゲームスタート！")
+	fmt.Fprintln(w, "ゲームスタート！制限時間は1分")
 GAME:
 	for {
 		// wordsをすべて回答したらゲームを終了させる
@@ -47,8 +46,8 @@ GAME:
 }
 
 // 標準入力から受け取ったテキストをchチャネルに送信。
-func input(stdin *os.File, ch chan<- string, done <-chan struct{}) {
-	scanner := bufio.NewScanner(stdin)
+func input(r io.Reader, ch chan<- string, done <-chan struct{}) {
+	scanner := bufio.NewScanner(r)
 	go func() {
 		for scanner.Scan() {
 			t := scanner.Text()

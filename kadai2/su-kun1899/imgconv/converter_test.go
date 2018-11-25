@@ -62,7 +62,7 @@ func TestFilePath_Is(t *testing.T) {
 	}
 }
 
-func TestConvertTo(t *testing.T) {
+func TestConvert(t *testing.T) {
 	type args struct {
 		srcFile     string
 		targetFile  string

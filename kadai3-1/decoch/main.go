@@ -14,52 +14,46 @@ import (
 func main() {
 	fmt.Println("typing game start.")
 
-	stopCh := make(chan struct{})
-	doneCh := make(chan struct{})
+	gameCh := make(chan struct{})
+	timerCh := make(chan struct{})
 
-	go startGame(stopCh, doneCh)
+	go startGame(gameCh, timerCh)
 
 	time.Sleep(10 * time.Second)
-	close(stopCh)
+	close(timerCh)
 
-	<-doneCh // wait until game end.
+	<-gameCh // wait until game end.
 	fmt.Println("end typing game.")
 }
 
-func startGame(stopCh, doneCh chan struct{}) {
-	defer func() {
-		close(doneCh) // notify game end.
+func startGame(gameCh, timerCh chan struct{}) {
+	result := 0
+
+	go func() {
+		<-timerCh
+		fmt.Printf("score: %d\n", result)
+		close(gameCh)
 	}()
 
-	result := 0
 	words, err := getWords()
 	if err != nil {
 		log.Fatalln("cannot get words.", err)
 	}
 
 	stdin := bufio.NewScanner(os.Stdin)
+	rand.Seed(time.Now().UnixNano())
 	for {
-		rand.Seed(time.Now().UnixNano())
 		position := rand.Intn(len(words))
-
-		question := words[position]
-		fmt.Println(question)
+		word := words[position]
+		fmt.Println(word)
 
 		stdin.Scan()
 		input := stdin.Text()
-		if question == input {
+		if word == input {
 			fmt.Printf("### GOT IT!!!! ###\n\n")
 			result++
 		} else {
 			fmt.Printf("### WRONG ###\n\n")
-		}
-
-		select {
-		case <-stopCh:
-			fmt.Printf("score: %d\n", result)
-			return
-		default:
-			// loop
 		}
 	}
 }

@@ -7,7 +7,7 @@ import (
 )
 
 func main() {
-	words := []string{"one", "two", "three"}
+	words := []string{"one", "two", "three", "four", "five"}
 	pingpong.Play(os.Stdin, os.Stdout, words)
 
 }

@@ -16,7 +16,7 @@ func Play(r io.Reader, w io.Writer, words []string) {
 
 	var s score
 
-	fmt.Fprintln(w, "ゲームスタート！制限時間は1分")
+	fmt.Fprintln(w, "ゲームスタート！制限時間は5秒！")
 GAME:
 	for {
 		// wordsをすべて回答したらゲームを終了させる

@@ -120,9 +120,8 @@ func TestConvert(t *testing.T) {
 			// setup working file
 			copyFile(t, tt.args.srcFile, tt.args.targetFile)
 			defer func() {
-				if tt.wantFile != "" {
-					os.Remove(tt.wantFile)
-				}
+				os.Remove(tt.args.targetFile)
+				os.Remove(tt.wantFile)
 			}()
 
 			newFile, err := imgconv.Convert(tt.args.targetFile, tt.args.imageFormat)

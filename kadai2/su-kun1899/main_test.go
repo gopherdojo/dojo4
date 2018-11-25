@@ -54,12 +54,12 @@ func Test_listFiles(t *testing.T) {
 
 func Test_runCmd(t *testing.T) {
 	// given
-	targetDir := "testdata"
+	targetDir := copyToTempDir(t, "testdata")
 	expected := []string{
-		filepath.Join("testdata", "Jpeg.png"),
-		filepath.Join("testdata", "foo", "Jpeg.png"),
-		filepath.Join("testdata", "foo", "baz", "Jpeg.png"),
-		filepath.Join("testdata", "foo", "baz", "bar", "Jpeg.png"),
+		filepath.Join(targetDir, "Jpeg.png"),
+		filepath.Join(targetDir, "foo", "Jpeg.png"),
+		filepath.Join(targetDir, "foo", "baz", "Jpeg.png"),
+		filepath.Join(targetDir, "foo", "baz", "bar", "Jpeg.png"),
 	}
 
 	// when
@@ -77,16 +77,6 @@ func Test_runCmd(t *testing.T) {
 			return
 		}
 	}
-
-	// cleanup
-	defer func() {
-		for _, created := range expected {
-			if err := os.Remove(created); err != nil {
-				t.Error("unexpected error:", err)
-				return
-			}
-		}
-	}()
 }
 
 func Test_runCmd_err(t *testing.T) {
@@ -111,24 +101,24 @@ func Test_runCmd_err(t *testing.T) {
 	}
 }
 
-func copyToTempDir(t *testing.T, src string) (destDir string) {
+func copyToTempDir(t *testing.T, src string) string {
 	t.Helper()
 
-	destDir, err := ioutil.TempDir("", "")
+	tempDir, err := ioutil.TempDir("", "")
 	if err != nil {
 		t.Fatal("unexpected error:", err)
 	}
 
 	err = filepath.Walk(src, func(path string, info os.FileInfo, err error) error {
 		if info.IsDir() {
-			return os.MkdirAll(filepath.Join(destDir, path), info.Mode())
+			return os.MkdirAll(filepath.Join(tempDir, path), info.Mode())
 		}
 
 		bytes, err := ioutil.ReadFile(path)
 		if err != nil {
 			t.Fatal("unexpected error:", err)
 		}
-		err = ioutil.WriteFile(filepath.Join(destDir, path), bytes, info.Mode())
+		err = ioutil.WriteFile(filepath.Join(tempDir, path), bytes, info.Mode())
 		if err != nil {
 			t.Fatal("unexpected error:", err)
 		}
@@ -140,5 +130,5 @@ func copyToTempDir(t *testing.T, src string) (destDir string) {
 		t.Fatal("unexpected error:", err)
 	}
 
-	return destDir
+	return filepath.Join(tempDir, src)
 }

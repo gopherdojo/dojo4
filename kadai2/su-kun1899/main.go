@@ -6,7 +6,6 @@ import (
 	"github.com/gopherdojo/dojo4/kadai2/su-kun1899/imgconv"
 	"os"
 	"path/filepath"
-	"strings"
 )
 
 func main() {
@@ -45,8 +44,4 @@ func runCmd(args []string) int {
 	}
 
 	return 0
-}
-
-func replaceExt(fileName, newExt string) string {
-	return fmt.Sprintf("%s.%s", strings.TrimSuffix(fileName, filepath.Ext(fileName)), newExt)
 }

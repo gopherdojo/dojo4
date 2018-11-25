@@ -45,15 +45,15 @@ func (gc *GameConfig) play(ctx context.Context) {
 		fmt.Print(">")
 		ans := <-gc.inputCh
 		if ans == word {
-			fmt.Println("collect!")
+			fmt.Println("correct!")
 			gc.correctCount++
 		} else {
-			fmt.Println("uncollect!")
+			fmt.Println("unccorrect!")
 		}
 
 		select {
 		case <-ctx.Done():
-			fmt.Printf("%d times collect\n", gc.correctCount)
+			fmt.Printf("%d times correct\n", gc.correctCount)
 			gc.wg.Done()
 			return
 		default:

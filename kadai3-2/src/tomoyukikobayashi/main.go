@@ -148,27 +148,27 @@ func main() {
 	}
 
 	/// DLした部分ファイルを結合する
-
-	// 複数ファイルを一気に読み出すReaderを作成
-	files := make([]io.Reader, procs)
-	for i := 0; i < procs; i++ {
-		file, err := os.Open(filepath.Join(dlTmp, strconv.FormatInt(int64(i+1), 10)))
-		if err != nil {
-			fmt.Printf("error occurred while reading tmp file %v", err)
-			os.Exit(ExitError)
-		}
-		files[i] = file
-	}
-	reader := io.MultiReader(files...)
-	b, err := ioutil.ReadAll(reader)
-	if err != nil {
-		fmt.Printf("error occurred while creating dl file %v", err)
-		os.Exit(ExitError)
-	}
-
 	// deferをos.Existと同じブロックに置かないように無名関数にしている
-	// (defer使わないでシーケンシャルにやるのと変わらんなこれだと)
+	// (でもdefer使わないでシーケンシャルにやるのと変わらんなこれだと)
 	err = func() error {
+		// 複数ファイルを一気に読み出すReaderを作成
+		files := make([]io.Reader, procs)
+		for i := 0; i < procs; i++ {
+			file, err := os.Open(filepath.Join(dlTmp, strconv.FormatInt(int64(i+1), 10)))
+			// 閉じるの失敗しても実害ないので、エラー処理なし
+			defer file.Close()
+			if err != nil {
+				fmt.Printf("error occurred while reading tmp file %v", err)
+				os.Exit(ExitError)
+			}
+			files[i] = file
+		}
+		reader := io.MultiReader(files...)
+		b, err := ioutil.ReadAll(reader)
+		if err != nil {
+			return err
+		}
+
 		/// tmpフォルダのゴミ掃除(失敗しても特に何もしない))
 		defer os.RemoveAll(dlTmp)
 

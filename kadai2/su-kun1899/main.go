@@ -14,26 +14,27 @@ func main() {
 }
 
 func runCmd(args []string) int {
-	// TODO fromとtoをオプションで受け取りたい
 	if len(args) != 1 {
 		fmt.Fprintln(os.Stderr, errors.New("missing target directory"))
 		return 1
 	}
 
+	// TODO fromとtoをオプションで受け取りたい
+	fromFormat := imgconv.JpegFormat
+	toFormat := imgconv.PngFormat
+
 	targetDir := args[0]
-	converter := imgconv.PngConv{}
 	err := filepath.Walk(targetDir, func(path string, info os.FileInfo, err error) error {
-		if !imgconv.Is(path, imgconv.JpegFormat) {
+		if !imgconv.Is(path, fromFormat) {
 			return nil
 		}
 
-		src := path
-		dest := replaceExt(src, "png")
-		err = converter.Convert(src, dest)
+		converted, err := imgconv.Convert(path, toFormat)
 		if err != nil {
 			return err
 		}
-		fmt.Fprintf(os.Stdout, "%s => %s\n", src, dest)
+
+		fmt.Fprintf(os.Stdout, "%s => %s\n", path, converted)
 
 		return nil
 	})

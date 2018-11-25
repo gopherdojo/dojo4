@@ -1,0 +1,24 @@
+yellow
+lavender
+maroon
+turquoise
+blue
+teal
+orange
+silver
+sky blue
+mint green
+pink
+ivory
+lime
+azure
+indigo
+cyan
+fuchsia
+tan
+plum
+black
+gold
+orchid
+red
+purple

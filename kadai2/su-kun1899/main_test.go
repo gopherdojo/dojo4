@@ -1,6 +1,7 @@
 package main
 
 import (
+	"io/ioutil"
 	"os"
 	"path/filepath"
 	"testing"
@@ -108,4 +109,36 @@ func Test_runCmd_err(t *testing.T) {
 			}
 		})
 	}
+}
+
+func copyToTempDir(t *testing.T, src string) (destDir string) {
+	t.Helper()
+
+	destDir, err := ioutil.TempDir("", "")
+	if err != nil {
+		t.Fatal("unexpected error:", err)
+	}
+
+	err = filepath.Walk(src, func(path string, info os.FileInfo, err error) error {
+		if info.IsDir() {
+			return os.MkdirAll(filepath.Join(destDir, path), info.Mode())
+		}
+
+		bytes, err := ioutil.ReadFile(path)
+		if err != nil {
+			t.Fatal("unexpected error:", err)
+		}
+		err = ioutil.WriteFile(filepath.Join(destDir, path), bytes, info.Mode())
+		if err != nil {
+			t.Fatal("unexpected error:", err)
+		}
+
+		return nil
+	})
+
+	if err != nil {
+		t.Fatal("unexpected error:", err)
+	}
+
+	return destDir
 }

@@ -16,10 +16,15 @@ func TestContentLength(t *testing.T) {
 	}
 }
 
-func TestDownload(t *testing.T) {
-	c := NewClient(URL)
-	c.download("1.jpg", 0, 5000)
-	c.download("2.jpg", 5001, 6480509)
+func TestNewRangeProperties(t *testing.T) {
+	ps := newRangeProperties(40000)
+	t.Logf("%v", ps)
+}
+
+func TestRangeDownload(t *testing.T) {
+	// c := NewClient(URL)
+	// c.rangeDownload("1.jpg", 0, 5000)
+	// c.rangeDownload("2.jpg", 5001, 6480509)
 }
 
 func TestMergeFiles(t *testing.T) {

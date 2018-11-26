@@ -15,7 +15,7 @@ type Game struct {
 	writer  io.Writer
 	idx     int
 	words   []string
-	timeout int
+	timeout time.Duration
 }
 
 func init() {
@@ -23,14 +23,14 @@ func init() {
 }
 
 // NewGame generates new Game instance
-func NewGame(r io.Reader, w io.Writer, words []string, timeout int) *Game {
+func NewGame(r io.Reader, w io.Writer, words []string, timeout time.Duration) *Game {
 	return &Game{reader: r, writer: w, words: words, timeout: timeout}
 }
 
 // Start starts typing game
 func (g Game) Start() int {
 	ctx := context.Background()
-	ctx, cancel := context.WithTimeout(ctx, time.Duration(g.timeout)*time.Second)
+	ctx, cancel := context.WithTimeout(ctx, g.timeout)
 	defer cancel()
 
 	ch := input(g.reader)

@@ -1,0 +1,5 @@
+hoge
+fuga
+Go Lang
+I have a pen
+I have an apple

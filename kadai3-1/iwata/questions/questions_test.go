@@ -18,14 +18,14 @@ func TestParse(t *testing.T) {
 		wantErr bool
 	}{
 		{"file not exist", args{"./not-exist.txt"}, nil, true},
-		{"empty file", args{"../testdata/parse_empty.txt"}, questions.Questions{}, false},
-		{"parse successfully", args{"../testdata/parse_questions.txt"}, questions.Questions{
-			questions.Question{"hoge"},
-			questions.Question{"fuga"},
-			questions.Question{"Go Lang"},
-			questions.Question{"I have a pen"},
-			questions.Question{"I have an apple"},
-		}, false},
+		{"empty file", args{"../testdata/parse_empty.txt"}, questions.NewQuestions(), false},
+		{"parse successfully", args{"../testdata/parse_questions.txt"}, questions.NewQuestions(
+			&questions.Question{"hoge"},
+			&questions.Question{"fuga"},
+			&questions.Question{"Go Lang"},
+			&questions.Question{"I have a pen"},
+			&questions.Question{"I have an apple"},
+		), false},
 	}
 	for _, tt := range tests {
 		tt := tt
@@ -44,10 +44,10 @@ func TestParse(t *testing.T) {
 }
 
 func TestQuestions_Give(t *testing.T) {
-	q := questions.Question{
+	q := &questions.Question{
 		Quiz: "test",
 	}
-	questions := questions.Questions{q}
+	questions := questions.NewQuestions(q)
 	got := questions.Give()
 	if diff := cmp.Diff(got, q); diff != "" {
 		t.Errorf("Give() = %v, want %v, differs: (-got +want):\n%s", got, q, diff)

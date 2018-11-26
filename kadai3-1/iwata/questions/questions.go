@@ -4,24 +4,22 @@ import (
 	"bufio"
 	"math/rand"
 	"os"
-	"time"
 
 	"github.com/pkg/errors"
 )
-
-//nolint[:gocheknoinits]
-func init() {
-	rand.Seed(time.Now().UnixNano())
-}
 
 type Question struct {
 	Quiz string
 }
 
-type Questions []Question
+type Questions interface {
+	Give() *Question
+}
+
+type questions []*Question
 
 func Parse(txtFile string) (Questions, error) {
-	questions := Questions{}
+	questions := questions{}
 
 	f, err := os.Open(txtFile)
 	if err != nil {
@@ -31,16 +29,16 @@ func Parse(txtFile string) (Questions, error) {
 
 	s := bufio.NewScanner(f)
 	for s.Scan() {
-		questions = append(questions, Question{Quiz: s.Text()})
+		questions = append(questions, &Question{Quiz: s.Text()})
 	}
 
 	return questions, nil
 }
 
-func (qs Questions) Give() Question {
+func (qs questions) Give() *Question {
 	return qs[rand.Intn(len(qs))]
 }
 
-func (q Question) Match(answer string) bool {
+func (q *Question) Match(answer string) bool {
 	return q.Quiz == answer
 }

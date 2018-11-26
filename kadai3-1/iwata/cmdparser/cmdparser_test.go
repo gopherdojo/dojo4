@@ -10,7 +10,7 @@ import (
 )
 
 func cmdArgs(cmd string) []string {
-	return append([]string{"imgconv"}, strings.Split(cmd, " ")...)
+	return append([]string{"cmdparser"}, strings.Split(cmd, " ")...)
 }
 
 func TestCmd_Parse(t *testing.T) {
@@ -21,6 +21,10 @@ func TestCmd_Parse(t *testing.T) {
 		wantErr bool
 	}{
 		{"default option", "./q.txt", &cmdparser.Config{Timeout: 15, TxtPath: "./q.txt"}, false},
+		{"customize timeout", "-timeout 10 ./q.txt", &cmdparser.Config{Timeout: 10, TxtPath: "./q.txt"}, false},
+		{"not int", "-timeout test ./q.txt", nil, true},
+		{"unknown options", "-hoge fuga ./q.txt", nil, true},
+		{"redundant arguments", "./q.txt ./p.txt", nil, true},
 	}
 	for _, tt := range tests {
 		tt := tt

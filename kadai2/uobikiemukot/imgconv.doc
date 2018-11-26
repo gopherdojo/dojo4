@@ -4,18 +4,6 @@ package imgconv
     import "./imgconv"
 
 
-    Example:
-    c := Converter{
-        InputFormat:  "png",
-        OutputFormat: "gif",
-        GIFOptions:   gif.Options{NumColors: 256},
-    }
-
-    err := c.Run("test/subdir")
-    if err != nil {
-        log.Fatal(err)
-    }
-
 TYPES
 
 type Converter struct {
@@ -29,5 +17,25 @@ type Converter struct {
 
 func (c *Converter) Run(root string) error
     Run search images from root directory and convert to specified format.
+
+    Example:
+    c := imgconv.Converter{
+        InputFormat:  "png",
+        OutputFormat: "gif",
+        GIFOptions:   gif.Options{NumColors: 256},
+    }
+
+    root, err := filepath.Abs("./testdata/subdir")
+    if err != nil {
+        return
+    }
+
+    err = c.Run(root)
+    if err != nil {
+        return
+    }
+
+    fmt.Println("succeeded!")
+    // Output: succeeded!
 
 

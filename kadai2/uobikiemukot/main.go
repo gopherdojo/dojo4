@@ -5,7 +5,7 @@ import (
 	"log"
 	"path/filepath"
 
-	"github.com/gopherdojo/dojo4/kadai1/uobikiemukot/imgconv"
+	"github.com/gopherdojo/dojo4/kadai2/uobikiemukot/imgconv"
 )
 
 func main() {

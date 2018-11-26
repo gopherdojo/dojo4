@@ -55,7 +55,6 @@ LOOP:
 }
 
 func (g *Game) setNewIdx() {
-	rand.Seed(time.Now().UnixNano())
 	g.idx = rand.Intn(len(g.words))
 }
 

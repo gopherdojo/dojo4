@@ -37,6 +37,10 @@ func Parse(txtFile string) (Questions, error) {
 	return questions, nil
 }
 
-func (q Questions) Give() Question {
-	return q[rand.Intn(len(q))]
+func (qs Questions) Give() Question {
+	return qs[rand.Intn(len(qs))]
+}
+
+func (q Question) Match(answer string) bool {
+	return q.Quiz == answer
 }

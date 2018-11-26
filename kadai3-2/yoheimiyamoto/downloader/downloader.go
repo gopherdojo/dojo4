@@ -19,15 +19,9 @@ func NewClient(url string) *Client {
 	return &Client{new(http.Client), url}
 }
 
-// contentLengthを取得
-func (c *Client) contentLength() (int, error) {
-	res, err := c.Head(c.url)
-	if err != nil {
-		return 0, err
-	}
-	return strconv.Atoi(res.Header.Get("Content-Length"))
-}
-
+// ファイルの分割ダウンロード
+// start -> 開始のbyte
+// end -> 終了のbyte
 // dst -> ダウンロード先のファイル名
 func (c *Client) download(dst string, start, end int) error {
 	req, _ := http.NewRequest("GET", c.url, nil)
@@ -51,6 +45,9 @@ func (c *Client) download(dst string, start, end int) error {
 	return nil
 }
 
+// ダウンロードした分割ファイルのマージ
+// src -> 元の分割ファイル名
+// dst -> マージ先のファイル名
 func (c *Client) mergeFiles(src []string, dst string) error {
 	f, err := os.Create(dst)
 	if err != nil {
@@ -69,4 +66,13 @@ func (c *Client) mergeFiles(src []string, dst string) error {
 		_f.Close()
 	}
 	return nil
+}
+
+// contentLengthを取得
+func (c *Client) contentLength() (int, error) {
+	res, err := c.Head(c.url)
+	if err != nil {
+		return 0, err
+	}
+	return strconv.Atoi(res.Header.Get("Content-Length"))
 }

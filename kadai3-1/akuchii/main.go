@@ -9,7 +9,7 @@ import (
 
 func main() {
 	timeout := 5
-	game := game.NewGame(os.Stdout, getWords(), timeout)
+	game := game.NewGame(os.Stdin, os.Stdout, getWords(), timeout)
 	cnt := game.Start()
 	fmt.Printf("\nfinish!\ncorrect count is %d\n", cnt)
 	os.Exit(0)

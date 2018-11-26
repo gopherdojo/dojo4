@@ -6,12 +6,12 @@ import (
 	"fmt"
 	"io"
 	"math/rand"
-	"os"
 	"time"
 )
 
 // Game generates typing game
 type Game struct {
+	reader  io.Reader
 	writer  io.Writer
 	idx     int
 	words   []string
@@ -23,8 +23,8 @@ func init() {
 }
 
 // NewGame generates new Game instance
-func NewGame(w io.Writer, words []string, timeout int) *Game {
-	return &Game{writer: w, words: words, timeout: timeout}
+func NewGame(r io.Reader, w io.Writer, words []string, timeout int) *Game {
+	return &Game{reader: r, writer: w, words: words, timeout: timeout}
 }
 
 // Start starts typing game
@@ -33,7 +33,7 @@ func (g Game) Start() int {
 	ctx, cancel := context.WithTimeout(ctx, time.Duration(g.timeout)*time.Second)
 	defer cancel()
 
-	ch := input(os.Stdin)
+	ch := input(g.reader)
 	cnt := 0
 LOOP:
 	for {

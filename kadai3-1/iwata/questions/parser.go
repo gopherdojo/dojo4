@@ -2,16 +2,23 @@ package questions
 
 import (
 	"bufio"
+	"math/rand"
 	"os"
+	"time"
 
 	"github.com/pkg/errors"
 )
+
+//nolint[:gocheknoinits]
+func init() {
+	rand.Seed(time.Now().UnixNano())
+}
 
 type Question struct {
 	Quiz string
 }
 
-type Questions = []Question
+type Questions []Question
 
 func Parse(txtFile string) (Questions, error) {
 	questions := Questions{}
@@ -28,4 +35,8 @@ func Parse(txtFile string) (Questions, error) {
 	}
 
 	return questions, nil
+}
+
+func (q Questions) Give() Question {
+	return q[rand.Intn(len(q))]
 }

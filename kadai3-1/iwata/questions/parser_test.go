@@ -1,8 +1,9 @@
 package questions_test
 
 import (
-	"reflect"
 	"testing"
+
+	"github.com/google/go-cmp/cmp"
 
 	"github.com/gopherdojo/dojo4/kadai3-1/iwata/questions"
 )
@@ -36,9 +37,20 @@ func TestParse(t *testing.T) {
 				t.Errorf("Parse() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("Parse() = %v, want %v", got, tt.want)
+			if diff := cmp.Diff(got, tt.want); diff != "" {
+				t.Errorf("Parse() = %v, want %v, differs: (-got +want):\n%s", got, tt.want, diff)
 			}
 		})
+	}
+}
+
+func TestQuestions_Give(t *testing.T) {
+	q := questions.Question{
+		Quiz: "test",
+	}
+	questions := questions.Questions{q}
+	got := questions.Give()
+	if diff := cmp.Diff(got, q); diff != "" {
+		t.Errorf("Give() = %v, want %v, differs: (-got +want):\n%s", got, q, diff)
 	}
 }

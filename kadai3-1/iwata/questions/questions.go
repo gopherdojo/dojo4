@@ -8,18 +8,18 @@ import (
 	"github.com/pkg/errors"
 )
 
-type Question struct {
+type Item struct {
 	Quiz string
 }
 
-type Questions interface {
-	Give() *Question
+type List interface {
+	Give() *Item
 }
 
-type questions []*Question
+type list []*Item
 
-func Parse(txtFile string) (Questions, error) {
-	questions := questions{}
+func Parse(txtFile string) (List, error) {
+	l := list{}
 
 	f, err := os.Open(txtFile)
 	if err != nil {
@@ -29,16 +29,16 @@ func Parse(txtFile string) (Questions, error) {
 
 	s := bufio.NewScanner(f)
 	for s.Scan() {
-		questions = append(questions, &Question{Quiz: s.Text()})
+		l = append(l, &Item{Quiz: s.Text()})
 	}
 
-	return questions, nil
+	return l, nil
 }
 
-func (qs questions) Give() *Question {
-	return qs[rand.Intn(len(qs))]
+func (l list) Give() *Item {
+	return l[rand.Intn(len(l))]
 }
 
-func (q *Question) Match(answer string) bool {
+func (q *Item) Match(answer string) bool {
 	return q.Quiz == answer
 }

@@ -14,17 +14,17 @@ func TestParse(t *testing.T) {
 	tests := []struct {
 		name    string
 		args    args
-		want    questions.Questions
+		want    questions.List
 		wantErr bool
 	}{
 		{"file not exist", args{"./not-exist.txt"}, nil, true},
-		{"empty file", args{"../testdata/parse_empty.txt"}, questions.NewQuestions(), false},
-		{"parse successfully", args{"../testdata/parse_questions.txt"}, questions.NewQuestions(
-			&questions.Question{"hoge"},
-			&questions.Question{"fuga"},
-			&questions.Question{"Go Lang"},
-			&questions.Question{"I have a pen"},
-			&questions.Question{"I have an apple"},
+		{"empty file", args{"../testdata/parse_empty.txt"}, questions.NewList(), false},
+		{"parse successfully", args{"../testdata/parse_questions.txt"}, questions.NewList(
+			&questions.Item{"hoge"},
+			&questions.Item{"fuga"},
+			&questions.Item{"Go Lang"},
+			&questions.Item{"I have a pen"},
+			&questions.Item{"I have an apple"},
 		), false},
 	}
 	for _, tt := range tests {
@@ -44,11 +44,11 @@ func TestParse(t *testing.T) {
 }
 
 func TestQuestions_Give(t *testing.T) {
-	q := &questions.Question{
+	q := &questions.Item{
 		Quiz: "test",
 	}
-	questions := questions.NewQuestions(q)
-	got := questions.Give()
+	l := questions.NewList(q)
+	got := l.Give()
 	if diff := cmp.Diff(got, q); diff != "" {
 		t.Errorf("Give() = %v, want %v, differs: (-got +want):\n%s", got, q, diff)
 	}
@@ -75,7 +75,7 @@ func TestQuestion_Match(t *testing.T) {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
-			q := questions.Question{
+			q := questions.Item{
 				Quiz: tt.fields.Quiz,
 			}
 			if got := q.Match(tt.args.answer); got != tt.want {

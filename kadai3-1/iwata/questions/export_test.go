@@ -1,5 +1,5 @@
 package questions
 
-func NewQuestions(qs ...*Question) Questions {
-	return append(questions{}, qs...)
+func NewList(qs ...*Item) List {
+	return append(list{}, qs...)
 }

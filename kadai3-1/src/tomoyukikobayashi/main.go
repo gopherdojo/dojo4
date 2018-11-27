@@ -6,11 +6,13 @@ used in CLI intrerfaces.
 package main
 
 import (
+	"context"
 	"flag"
 	"fmt"
 	"io"
 	"os"
 	"path/filepath"
+	"time"
 
 	"tomoyukikobayashi/typing"
 )
@@ -66,14 +68,17 @@ func (c *CLI) Run(args []string) int {
 	defer file.Close()
 
 	// gameを動作させるインターフェイスを初期化
-	game, err := typing.NewGame(t, file, c.inStream)
+	game, err := typing.NewGame(file, c.inStream)
 	if err != nil {
 		fmt.Fprintf(c.outStream, "failed to initizalize game %v", err)
 		return ExitError
 	}
 
 	fmt.Fprintf(c.outStream, "start game %d sec\n", t)
-	qCh, aCh, rCh := game.Run()
+	tc := time.Duration(t) * time.Second
+	ctx, cancel := context.WithTimeout(context.Background(), tc)
+	defer cancel()
+	qCh, aCh, rCh := game.Run(ctx)
 
 	for {
 		q, progress := <-qCh

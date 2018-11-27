@@ -25,11 +25,11 @@ func NewQuestioner(data QuizData) Questioner {
 	q := &questionContainer{
 		qs: qs,
 	}
+	rand.Seed(time.Now().UnixNano())
 	return q
 }
 
 func (q *questionContainer) GetNewWord(level int) string {
-	rand.Seed(time.Now().UnixNano())
 	rand := rand.Intn(len(q.qs[level]))
 	// HACK ほんとはmap okを見た方がいいけど、省略
 	return q.qs[level][rand]

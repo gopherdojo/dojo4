@@ -2,7 +2,6 @@ package typing
 
 import (
 	"io"
-	"io/ioutil"
 
 	yamler "gopkg.in/yaml.v2"
 )
@@ -22,14 +21,8 @@ type QuizSource struct {
 
 // NewQuizData クイズデータを生成する
 func NewQuizData(source io.Reader) (QuizData, error) {
-	data, err := ioutil.ReadAll(source)
-	if err != nil {
-		return nil, err
-	}
-
 	var s QuizSource
-	err = yamler.Unmarshal([]byte(data), &s)
-	if err != nil {
+	if err := yamler.NewDecoder(source).Decode(&s); err != nil {
 		return nil, err
 	}
 

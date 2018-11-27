@@ -9,7 +9,6 @@ import (
 	"crypto/sha1"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -117,12 +116,6 @@ func main() {
 				return err
 			}
 
-			// 取得したデータをBufに読み出し
-			buf, err := ioutil.ReadAll(dRes.Body)
-			if err != nil {
-				return err
-			}
-
 			// 分割ファイルの保存
 			file, err := os.Create(fn)
 			if err != nil {
@@ -131,7 +124,7 @@ func main() {
 			defer file.Close()
 
 			// TODO ここで落ちるとファイルが存在するけどDLできていないのにスキップしてしまう
-			_, err = file.Write(buf)
+			_, err = io.Copy(file, dRes.Body)
 			if err != nil {
 				return err
 			}
@@ -155,19 +148,15 @@ func main() {
 		files := make([]io.Reader, procs)
 		for i := 0; i < procs; i++ {
 			file, err := os.Open(filepath.Join(dlTmp, strconv.FormatInt(int64(i+1), 10)))
-			// 閉じるの失敗しても実害ないので、エラー処理なし
-			defer file.Close()
 			if err != nil {
 				fmt.Printf("error occurred while reading tmp file %v", err)
 				os.Exit(ExitError)
 			}
+			// 閉じるの失敗しても実害ないので、エラー処理なし
+			defer file.Close()
 			files[i] = file
 		}
 		reader := io.MultiReader(files...)
-		b, err := ioutil.ReadAll(reader)
-		if err != nil {
-			return err
-		}
 
 		/// tmpフォルダのゴミ掃除(失敗しても特に何もしない))
 		defer os.RemoveAll(dlTmp)
@@ -179,7 +168,7 @@ func main() {
 		}
 		defer file.Close()
 
-		_, err = file.Write(b)
+		_, err = io.Copy(file, reader)
 		if err != nil {
 			return err
 		}

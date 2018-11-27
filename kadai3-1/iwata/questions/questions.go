@@ -29,6 +29,9 @@ func Parse(txtFile string) (List, error) {
 
 	s := bufio.NewScanner(f)
 	for s.Scan() {
+		if s.Text() == "" {
+			continue
+		}
 		l = append(l, &Item{Quiz: s.Text()})
 	}
 

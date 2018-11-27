@@ -51,8 +51,8 @@ func handleSignal(ctx context.Context, cancel context.CancelFunc, ch <-chan os.S
 			s := <-ch
 			switch s {
 			case syscall.SIGHUP, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT:
+				log.Println("CANCELED")
 				cancel()
-				log.Println("Canceled")
 			}
 		}
 	}()

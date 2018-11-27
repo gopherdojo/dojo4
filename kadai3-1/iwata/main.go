@@ -24,17 +24,11 @@ func main() {
 		log.Fatalf("Failed to parse text file: %+v", err)
 	}
 
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-
 	ch := make(chan os.Signal)
 	defer close(ch)
-	signal.Notify(ch,
-		syscall.SIGHUP,
-		syscall.SIGINT,
-		syscall.SIGTERM,
-		syscall.SIGQUIT)
-	handleSignal(ctx, cancel, ch)
+
+	ctx, cancel := sigHandledContext(ch)
+	defer cancel()
 
 	g := gameplayer.NewGame(os.Stdout, os.Stdin, ql)
 	s, err := g.Play(ctx, c.Timeout)
@@ -45,7 +39,15 @@ func main() {
 	s.Display()
 }
 
-func handleSignal(ctx context.Context, cancel context.CancelFunc, ch <-chan os.Signal) {
+func sigHandledContext(ch chan os.Signal) (context.Context, context.CancelFunc) {
+	ctx, cancel := context.WithCancel(context.Background())
+
+	signal.Notify(ch,
+		syscall.SIGHUP,
+		syscall.SIGINT,
+		syscall.SIGTERM,
+		syscall.SIGQUIT)
+
 	go func() {
 		for {
 			s := <-ch
@@ -56,4 +58,6 @@ func handleSignal(ctx context.Context, cancel context.CancelFunc, ch <-chan os.S
 			}
 		}
 	}()
+
+	return ctx, cancel
 }

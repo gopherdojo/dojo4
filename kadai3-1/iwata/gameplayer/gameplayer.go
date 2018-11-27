@@ -25,7 +25,7 @@ func (p *GamePlayer) Play(ctx context.Context, timeout int) (*Score, error) {
 	p.display("Start Typing Game!!")
 	p.display(fmt.Sprintf("The time limit is %d seconds\n", timeout))
 
-	s := &Score{w: p.w}
+	s := &Score{}
 	n := 1
 	ctxWT, cancel := context.WithTimeout(ctx, time.Second*time.Duration(timeout))
 	defer cancel()
@@ -86,19 +86,14 @@ func (p *GamePlayer) readAnswer(ctx context.Context) (chan string, chan error) {
 }
 
 type Score struct {
-	w            io.Writer
-	correctNum   int
-	inCorrectNum int
+	CorrectNum   int
+	InCorrectNum int
 }
 
 func (s *Score) correct() {
-	s.correctNum++
+	s.CorrectNum++
 }
 
 func (s *Score) inCorrect() {
-	s.inCorrectNum++
-}
-
-func (s *Score) Display() {
-	fmt.Fprintf(s.w, "\n\nSCORE\nCorrect:\t%d\nIn correct:\t%d\n", s.correctNum, s.inCorrectNum)
+	s.InCorrectNum++
 }

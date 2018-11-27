@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"os"
 	"os/signal"
@@ -37,6 +38,7 @@ func main() {
 	}
 
 	s.Display()
+	fmt.Printf("\n\nSCORE\nCorrect:\t%d\nIn correct:\t%d\n", s.CorrectNum, s.InCorrectNum)
 }
 
 func sigHandledContext(ch chan os.Signal) (context.Context, context.CancelFunc) {

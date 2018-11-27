@@ -22,3 +22,7 @@ lint: $(GOFILES)
 clean:
 	go clean
 	rm -f ${BINFILE}
+
+.PHONY: watch
+watch:
+	reflex -r '\.go$$' -- sh -c 'make; make lint; make test'

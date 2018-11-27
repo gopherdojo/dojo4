@@ -4,9 +4,15 @@ import (
 	"bufio"
 	"math/rand"
 	"os"
+	"time"
 
 	"github.com/pkg/errors"
 )
+
+//nolint[:gocheknoinits]
+func init() {
+	rand.Seed(time.Now().UnixNano())
+}
 
 type Item struct {
 	Quiz string

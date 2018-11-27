@@ -8,6 +8,8 @@ import (
 	"time"
 )
 
+// TOOD ハンドラのテストを書いてみる
+
 func init() {
 	rand.Seed(time.Now().UnixNano())
 }
@@ -15,7 +17,7 @@ func init() {
 // Fortune おみくじ機能を提供する
 func Fortune(w http.ResponseWriter, r *http.Request) {
 	f := fourtunes.Omikuji()
-	// TOOD こいつはレスポンス毎ではなく、middlewareなどで横断的にやらせたい
+	// TOOD 1個しかないのでここでやるが、レスポンス毎ではなく、middlewareなどで横断的にやらせたい
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 	f.WriteJSON(w)
 }

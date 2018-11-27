@@ -92,7 +92,10 @@ func (d Downloader) MergeFiles() error {
 }
 
 func (d Downloader) request(r Range) error {
-	req, _ := http.NewRequest("GET", d.url, nil)
+	req, err := http.NewRequest(http.MethodGet, d.url, nil)
+	if err != nil {
+		return err
+	}
 	req.Header.Set("Range", fmt.Sprintf("bytes=%d-%d", r.start, r.end))
 	client := new(http.Client)
 	resp, err := client.Do(req)

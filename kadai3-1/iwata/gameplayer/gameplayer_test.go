@@ -4,10 +4,11 @@ import (
 	"bytes"
 	"context"
 	"io"
-	"reflect"
 	"strings"
 	"testing"
+	"time"
 
+	"github.com/google/go-cmp/cmp"
 	"github.com/gopherdojo/dojo4/kadai3-1/iwata/gameplayer"
 	"github.com/gopherdojo/dojo4/kadai3-1/iwata/questions"
 )
@@ -42,7 +43,7 @@ func TestGamePlayer_Play(t *testing.T) {
 			w := &bytes.Buffer{}
 			p := gameplayer.NewGame(w, tt.fields.r, &MockQuestionList{tt.fields.q})
 			ctx := context.Background()
-			got, err := p.Play(ctx, 1)
+			got, err := p.Play(ctx, time.Microsecond*100)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GamePlayer.Play() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -53,8 +54,8 @@ func TestGamePlayer_Play(t *testing.T) {
 			} else {
 				want = &gameplayer.Score{CorrectNum: 0, InCorrectNum: 1}
 			}
-			if !reflect.DeepEqual(got, want) {
-				t.Errorf("GamePlayer.Play() = %v, want %v", got, want)
+			if diff := cmp.Diff(got, want); diff != "" {
+				t.Errorf("GamePlayer.Play() = %v, want %v, differs: (-got +want):\n%s", got, want, diff)
 			}
 		})
 	}

@@ -21,13 +21,13 @@ func NewGame(w io.Writer, r io.Reader, ql questions.List) *GamePlayer {
 	return &GamePlayer{w: w, r: r, ql: ql}
 }
 
-func (p *GamePlayer) Play(ctx context.Context, timeout int) (*Score, error) {
+func (p *GamePlayer) Play(ctx context.Context, timeout time.Duration) (*Score, error) {
 	p.display("Start Typing Game!!")
 	p.display(fmt.Sprintf("The time limit is %d seconds\n", timeout))
 
 	s := &Score{}
 	n := 1
-	ctxWT, cancel := context.WithTimeout(ctx, time.Second*time.Duration(timeout))
+	ctxWT, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
 
 	ch, cherr := p.readAnswer(ctxWT)

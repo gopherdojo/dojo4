@@ -7,6 +7,7 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 
 	"github.com/gopherdojo/dojo4/kadai3-1/iwata/cmdparser"
 	"github.com/gopherdojo/dojo4/kadai3-1/iwata/gameplayer"
@@ -32,12 +33,11 @@ func main() {
 	defer cancel()
 
 	g := gameplayer.NewGame(os.Stdout, os.Stdin, ql)
-	s, err := g.Play(ctx, c.Timeout)
+	s, err := g.Play(ctx, time.Second*time.Duration(c.Timeout))
 	if err != nil {
 		log.Fatalf("Failed to play typing: %+v", err)
 	}
 
-	s.Display()
 	fmt.Printf("\n\nSCORE\nCorrect:\t%d\nIn correct:\t%d\n", s.CorrectNum, s.InCorrectNum)
 }
 

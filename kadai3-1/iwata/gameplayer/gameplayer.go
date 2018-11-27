@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/gopherdojo/dojo4/kadai3-1/iwata/questions"
+	"github.com/pkg/errors"
 )
 
 type GamePlayer struct {
@@ -20,9 +21,9 @@ func NewGame(w io.Writer, r io.Reader, ql questions.List) *GamePlayer {
 	return &GamePlayer{w: w, r: r, ql: ql}
 }
 
-func (p *GamePlayer) Play(timeout int) *Score {
+func (p *GamePlayer) Play(timeout int) (*Score, error) {
 	p.display("Start Typing Game!!")
-	p.display(fmt.Sprintf("The time limit is %d seconds", timeout))
+	p.display(fmt.Sprintf("The time limit is %d seconds\n", timeout))
 
 	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(timeout)*time.Second)
 	defer cancel()
@@ -30,8 +31,9 @@ func (p *GamePlayer) Play(timeout int) *Score {
 	s := &Score{w: p.w}
 	n := 1
 
-	ch := p.readAnswer()
+	ch, cherr := p.readAnswer(ctx)
 	defer close(ch)
+	defer close(cherr)
 
 GAMEEND:
 	for {
@@ -47,27 +49,41 @@ GAMEEND:
 				s.inCorrect()
 			}
 		case <-ctx.Done():
-			p.display("This challenge has been time up!!!")
+			p.display("\nThis challenge has been time up!!!")
 			break GAMEEND
 		}
 	}
 
-	return s
+	if len(cherr) > 0 {
+		return nil, <-cherr
+	}
+
+	return s, nil
 }
 
 func (p *GamePlayer) display(msg string) {
 	fmt.Fprintln(p.w, msg)
 }
 
-func (p *GamePlayer) readAnswer() chan string {
+func (p *GamePlayer) readAnswer(ctx context.Context) (chan string, chan error) {
 	ch := make(chan string)
+	cherr := make(chan error)
 	go func() {
 		s := bufio.NewScanner(p.r)
 		for s.Scan() {
-			ch <- s.Text()
+			select {
+			case <-ctx.Done():
+				break
+			default:
+				ch <- s.Text()
+			}
+		}
+		if err := s.Err(); err != nil {
+			cherr <- errors.Wrap(err, "Failed to read from standard input")
 		}
 	}()
-	return ch
+
+	return ch, cherr
 }
 
 type Score struct {
@@ -85,5 +101,5 @@ func (s *Score) inCorrect() {
 }
 
 func (s *Score) Display() {
-	fmt.Fprintf(s.w, "Correct:\t%d\nIn correct:\t%d\n", s.correctNum, s.inCorrectNum)
+	fmt.Fprintf(s.w, "\nCorrect:\t%d\nIn correct:\t%d\n", s.correctNum, s.inCorrectNum)
 }

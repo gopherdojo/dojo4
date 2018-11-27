@@ -22,7 +22,10 @@ func main() {
 	}
 
 	g := gameplayer.NewGame(os.Stdout, os.Stdin, ql)
-	s := g.Play(c.Timeout)
+	s, err := g.Play(c.Timeout)
+	if err != nil {
+		log.Fatalf("Failed to play typing: %+v", err)
+	}
 
 	s.Display()
 }

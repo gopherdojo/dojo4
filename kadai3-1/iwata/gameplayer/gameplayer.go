@@ -21,17 +21,16 @@ func NewGame(w io.Writer, r io.Reader, ql questions.List) *GamePlayer {
 	return &GamePlayer{w: w, r: r, ql: ql}
 }
 
-func (p *GamePlayer) Play(timeout int) (*Score, error) {
+func (p *GamePlayer) Play(ctx context.Context, timeout int) (*Score, error) {
 	p.display("Start Typing Game!!")
 	p.display(fmt.Sprintf("The time limit is %d seconds\n", timeout))
 
-	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(timeout)*time.Second)
-	defer cancel()
-
 	s := &Score{w: p.w}
 	n := 1
+	ctxWT, cancel := context.WithTimeout(ctx, time.Second*time.Duration(timeout))
+	defer cancel()
 
-	ch, cherr := p.readAnswer(ctx)
+	ch, cherr := p.readAnswer(ctxWT)
 	defer close(ch)
 	defer close(cherr)
 
@@ -48,7 +47,7 @@ GAMEEND:
 			} else {
 				s.inCorrect()
 			}
-		case <-ctx.Done():
+		case <-ctxWT.Done():
 			p.display("\nThis challenge has been time up!!!")
 			break GAMEEND
 		}
@@ -101,5 +100,5 @@ func (s *Score) inCorrect() {
 }
 
 func (s *Score) Display() {
-	fmt.Fprintf(s.w, "\nCorrect:\t%d\nIn correct:\t%d\n", s.correctNum, s.inCorrectNum)
+	fmt.Fprintf(s.w, "\n\nSCORE\nCorrect:\t%d\nIn correct:\t%d\n", s.correctNum, s.inCorrectNum)
 }

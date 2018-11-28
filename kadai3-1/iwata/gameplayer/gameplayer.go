@@ -23,7 +23,7 @@ func NewGame(w io.Writer, r io.Reader, ql questions.List) *GamePlayer {
 
 func (p *GamePlayer) Play(ctx context.Context, timeout time.Duration) (*Score, error) {
 	p.display("Start Typing Game!!")
-	p.display(fmt.Sprintf("The time limit is %d seconds\n", timeout))
+	p.display(fmt.Sprintf("The time limit is %d seconds\n", int64(timeout/time.Second)))
 
 	s := &Score{}
 	n := 1

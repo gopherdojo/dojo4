@@ -26,8 +26,13 @@ func main() {
 		log.Fatalf("Failed to parse text file: %+v", err)
 	}
 
-	ch := make(chan os.Signal)
-	defer close(ch)
+	ch := make(chan os.Signal, 1)
+	defer signal.Stop(ch)
+	signal.Notify(ch,
+		syscall.SIGHUP,
+		syscall.SIGINT,
+		syscall.SIGTERM,
+		syscall.SIGQUIT)
 
 	ctx, cancel := sigHandledContext(ch)
 	defer cancel()
@@ -41,22 +46,20 @@ func main() {
 	fmt.Printf("\n\nSCORE\nCorrect:\t%d\nIn correct:\t%d\n", s.CorrectNum, s.InCorrectNum)
 }
 
-func sigHandledContext(ch chan os.Signal) (context.Context, context.CancelFunc) {
+func sigHandledContext(ch <-chan os.Signal) (context.Context, context.CancelFunc) {
 	ctx, cancel := context.WithCancel(context.Background())
 
-	signal.Notify(ch,
-		syscall.SIGHUP,
-		syscall.SIGINT,
-		syscall.SIGTERM,
-		syscall.SIGQUIT)
-
 	go func() {
+	LOOP:
 		for {
-			s := <-ch
-			switch s {
-			case syscall.SIGHUP, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT:
-				log.Println("CANCELED")
-				cancel()
+			select {
+			case s := <-ch:
+				switch s {
+				case syscall.SIGHUP, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT:
+					cancel()
+				}
+			case <-ctx.Done():
+				break LOOP
 			}
 		}
 	}()

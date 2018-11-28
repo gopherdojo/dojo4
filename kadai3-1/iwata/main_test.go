@@ -9,8 +9,7 @@ import (
 	"time"
 )
 
-func isDone(t *testing.T, ctx context.Context) bool {
-	t.Helper()
+func isDone(ctx context.Context) bool {
 	select {
 	case <-ctx.Done():
 		return true
@@ -29,7 +28,7 @@ func Test_sigHandledContext(t *testing.T) {
 		{"cancel context if send SIGINT", true, syscall.SIGINT},
 		{"cancel context if send SIGTERM", true, syscall.SIGTERM},
 		{"cancel context if send SIGQUIT", true, syscall.SIGQUIT},
-		{"not cancel context if send SIGWINCH", false, syscall.SIGWINCH},
+		{"not cancel context if send SIGUSR1", false, syscall.SIGUSR1},
 	}
 	for _, tt := range tests {
 		tt := tt
@@ -50,7 +49,7 @@ func Test_sigHandledContext(t *testing.T) {
 				t.Fatalf("Failed to send SIGNAL %v to this process", tt.sig)
 			}
 
-			got := isDone(t, ctx)
+			got := isDone(ctx)
 			if got != tt.canceled {
 				t.Errorf("Channel trapping signal cancel or not the context: got %v, want %v", got, tt.canceled)
 			}

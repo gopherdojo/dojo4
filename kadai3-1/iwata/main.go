@@ -50,17 +50,13 @@ func sigHandledContext(ch <-chan os.Signal) (context.Context, context.CancelFunc
 	ctx, cancel := context.WithCancel(context.Background())
 
 	go func() {
-	LOOP:
-		for {
-			select {
-			case s := <-ch:
-				switch s {
-				case syscall.SIGHUP, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT:
-					cancel()
-				}
-			case <-ctx.Done():
-				break LOOP
-			}
+		s, ok := <-ch
+		if !ok {
+			return
+		}
+		switch s {
+		case syscall.SIGHUP, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT:
+			cancel()
 		}
 	}()
 

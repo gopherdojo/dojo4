@@ -1,8 +1,9 @@
 package main
 
 import (
-	"github.com/happylifetaka/dojo4/kadai3-1/happylifetaka/typinggame"
 	"os"
+
+	"github.com/happylifetaka/dojo4/kadai3-1/happylifetaka/typinggame"
 )
 
 func main() {

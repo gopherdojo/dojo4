@@ -47,14 +47,12 @@ GAMEEND:
 			} else {
 				s.inCorrect()
 			}
+		case err := <-cherr:
+			return nil, err
 		case <-ctxWT.Done():
 			p.display("\nThis challenge has been time up!!!")
 			break GAMEEND
 		}
-	}
-
-	if len(cherr) > 0 {
-		return nil, <-cherr
 	}
 
 	return s, nil

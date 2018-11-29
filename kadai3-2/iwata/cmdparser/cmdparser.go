@@ -13,8 +13,8 @@ import (
 
 // Config is a configuration
 type Config struct {
-	Parallel int
-	Timeout  int
+	Parallel uint
+	Timeout  uint
 	Output   string
 	URL      string
 }
@@ -32,9 +32,9 @@ func (p *Parser) Parse(args []string) (*Config, error) {
 	config := &Config{}
 	flags := flag.NewFlagSet("cmdparser", flag.ContinueOnError)
 	flags.SetOutput(p.stderr)
-	flags.IntVar(&config.Parallel, "n", runtime.NumCPU(), "Parallel number")
+	flags.UintVar(&config.Parallel, "n", uint(runtime.NumCPU()), "Parallel number")
 	flags.StringVar(&config.Output, "o", "./", "Output directory")
-	flags.IntVar(&config.Timeout, "timeout", 15, "Timeout for HTTP conntection")
+	flags.UintVar(&config.Timeout, "timeout", 15, "Timeout for HTTP conntection")
 	flags.Usage = func() {
 		fmt.Fprintf(p.stderr, `
 Usage of %s:

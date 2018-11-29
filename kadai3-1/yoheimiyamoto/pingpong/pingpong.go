@@ -11,42 +11,50 @@ import (
 // words -> 出題するワード一覧
 func Play(r io.Reader, w io.Writer, words []string) {
 	inputCh := make(chan string)
-	inputDone := make(chan struct{}, 1)
-	input(r, inputCh, inputDone)
+	scoreCh := make(chan score)
 
-	var s score
+	input(r, inputCh)
 
 	fmt.Fprintln(w, "ゲームスタート！制限時間は5秒！")
-GAME:
+	go game(w, words, inputCh, scoreCh)
+
+	s := <-scoreCh
+	fmt.Fprintln(w, "ゲーム終了")
+	fmt.Fprintln(w, s.Result())
+}
+
+func game(w io.Writer, words []string, inputCh <-chan string, scoreCh chan<- score) {
+	var s score
+
+	go func() {
+		select {
+		case <-time.After(5 * time.Second):
+			fmt.Fprintln(w, "タイムアウト！")
+			scoreCh <- s
+		}
+	}()
+
 	for {
 		// wordsをすべて回答したらゲームを終了させる
-		if s.count() == (len(words) - 1) {
-			break GAME
+		if s.count() == len(words) {
+			scoreCh <- s
+			break
 		}
-
 		word := words[s.count()]
 		fmt.Fprintln(w, word)
-
-		select {
-		case i := <-inputCh:
-			if i == word {
-				fmt.Fprintln(w, "正解！")
-				s.addCorrect()
-			} else {
-				fmt.Fprintln(w, "不正解！")
-				s.addIncorrect()
-			}
-		case <-time.After(5 * time.Second):
-			break GAME
+		i := <-inputCh
+		if i == word {
+			fmt.Fprintln(w, "正解！")
+			s.addCorrect()
+		} else {
+			fmt.Fprintln(w, "不正解！")
+			s.addIncorrect()
 		}
 	}
-	close(inputDone) // inputのチャネルを閉じる
-	fmt.Fprintln(w, "タイムアウト。ゲーム終了")
-	fmt.Println(s.Result())
 }
 
 // 標準入力から受け取ったテキストをchチャネルに送信。
-func input(r io.Reader, ch chan<- string, done <-chan struct{}) {
+func input(r io.Reader, ch chan<- string) {
 	scanner := bufio.NewScanner(r)
 	go func() {
 		for scanner.Scan() {
@@ -54,18 +62,4 @@ func input(r io.Reader, ch chan<- string, done <-chan struct{}) {
 			ch <- t
 		}
 	}()
-
-	// ゲームが終了した場合、inputも終了させる。
-	go func() {
-		select {
-		case <-done:
-			return
-		}
-	}()
-
-	// 上記を以下のようにgoroutine使わずに記述するとゲームがフリーズしてしまう理由が理解できていないです。
-	// select {
-	// case <-done:
-	// 	return
-	// }
 }

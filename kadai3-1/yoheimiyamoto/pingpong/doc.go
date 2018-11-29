@@ -1,0 +1,5 @@
+/*
+Package pingpong ...
+
+*/
+package pingpong

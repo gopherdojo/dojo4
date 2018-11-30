@@ -2,10 +2,14 @@ package downloader
 
 import (
 	"context"
+	"fmt"
 	"io"
+	"math"
 	"net/http"
 	"os"
+	"path/filepath"
 	"sort"
+	"sync"
 	"time"
 
 	"github.com/pkg/errors"
@@ -14,32 +18,75 @@ import (
 )
 
 type Downloader struct {
-	Procs uint
+	procs uint
+	dir   string
 }
 
-type ChunkRange struct {
-	start uint
-	end   uint
+type ChunkRequest struct {
+	Start uint
+	End   uint
 }
 
-type ChunkFiles []string
-
-func NewDownloader(procs uint) *Downloader {
-	return &Downloader{Procs: procs}
+type ChunkFiles struct {
+	Files []string
+	mu    sync.Mutex
 }
 
-func (d *Downloader) Do(url string, timeout time.Duration) (ChunkFiles, error) {
+func NewDownloader(procs uint, tempDir string) *Downloader {
+	return &Downloader{procs: procs, dir: tempDir}
+}
+
+func (d *Downloader) Do(url string, timeout time.Duration) (*ChunkFiles, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), timeout)
 	defer cancel()
 
-	size, err := GetContentLength(ctx, url)
+	length, err := GetContentLength(ctx, url)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to get ContentType")
 	}
 
-	cr := makeChunkRages(size, d.Procs)
+	cr := makeChunkRequests(length, d.procs)
+	cf := &ChunkFiles{Files: make([]string, d.procs)}
 
 	eg, ctxEg := errgroup.WithContext(ctx)
+	for _, req := range cr {
+		req := req
+		eg.Go(func() error {
+			res, err := req.Do(ctxEg, url)
+			if err != nil {
+				return errors.Wrapf(err, "failed to do chunk request: %s", url)
+			}
+			defer res.Body.Close()
+
+			f := filepath.Join(d.dir, string(req.Start))
+			w, err := os.Create(f)
+			if err != nil {
+				return errors.Wrapf(err, "failed to create a chunk file: %s", f)
+			}
+			defer w.Close()
+
+			_, err = io.Copy(w, res.Body)
+			if err != nil {
+				return errors.Wrapf(err, "failed to dump a chunk body to %s", f)
+			}
+
+			cf.mu.Lock()
+			cf.Files = append(cf.Files, f)
+			cf.mu.Unlock()
+
+			return nil
+		})
+	}
+
+	if err := eg.Wait(); err != nil {
+		err = errors.Wrap(err, "failed to download in parallel")
+		if errR := os.RemoveAll(d.dir); errR != nil {
+			err = errors.Wrapf(errR, "failed to clear temp files in %s", d.dir)
+		}
+		return nil, err
+	}
+
+	return cf, nil
 }
 
 func GetContentLength(ctx context.Context, url string) (uint, error) {
@@ -59,33 +106,53 @@ func GetContentLength(ctx context.Context, url string) (uint, error) {
 	return uint(res.ContentLength), nil
 }
 
-func makeChunkRages(size, p uint) []ChunkRange {
-	chunkSize := size / p
-	buf := make([]ChunkRange, p)
-	for i := 0; i < size; i + chunkSize {
+func makeChunkRequests(length, p uint) []*ChunkRequest {
+	chunkSize := uint(math.Ceil(float64(length) / float64(p)))
+	buf := make([]*ChunkRequest, p)
+	// Content-Rangesは0番目からはじまり, Content-Length-1番目まで
+	for i := uint(0); i < p; i++ {
+		s := i * chunkSize
+		e := s + chunkSize - 1
+		buf = append(buf, &ChunkRequest{Start: s, End: e})
 	}
 
 	return buf
 }
 
-func (c ChunkFiles) Save(dist string) error {
+func (r *ChunkRequest) Do(ctx context.Context, url string) (*http.Response, error) {
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		return nil, errors.Wrapf(err, "failed to GET: %s", url)
+	}
+
+	req.Header.Set("Range", fmt.Sprintf("bytes=%d-%d", r.Start, r.End))
+	req = req.WithContext(ctx)
+
+	return http.DefaultClient.Do(req)
+}
+
+func (c *ChunkFiles) Save(dist string) error {
 	d, err := os.Create(dist)
 	if err != nil {
 		return errors.Wrapf(err, "failed to create %s", dist)
 	}
 
-	sort.Strings(c)
-	for _, f := range c {
+	sort.Strings(c.Files)
+	for _, f := range c.Files {
 		chunk, err := os.Open(f)
 		if err != nil {
 			return errors.Wrapf(err, "failed to open %s", chunk)
 		}
 		defer chunk.Close()
-		io.Copy(d, chunk)
-		// cleanup temp files
-		if err := os.Remove(f); err != nil {
-			return errors.Wrapf(err, "failed to remove %s", chunk)
+
+		_, err = io.Copy(d, chunk)
+		if err != nil {
+			return errors.Wrapf(err, "failed to copy chunk data to %s", f)
 		}
+	}
+
+	if err := os.RemoveAll(filepath.Dir(c.Files[0])); err != nil {
+		return errors.Wrap(err, "failed to clean up temp files")
 	}
 
 	return nil

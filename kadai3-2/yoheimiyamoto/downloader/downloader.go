@@ -3,6 +3,7 @@ package downloader
 import (
 	"fmt"
 	"io"
+	"math"
 	"net/http"
 	"os"
 	"strconv"
@@ -15,7 +16,7 @@ type Client struct {
 }
 
 type rangeProperty struct {
-	dst   string // 一時保存先のファイル名
+	path  string // 一時保存先のファイル名
 	start int    // 開始のバイト数
 	end   int    // 終了のバイト数
 }
@@ -25,44 +26,77 @@ func NewClient(url string) *Client {
 	return &Client{new(http.Client), url}
 }
 
-//
-func newRangeProperties(contentLength int) []*rangeProperty {
-	// const range = 10000
-	var out []*rangeProperty
-	f := func(i int) (int, int) {
-		return 0, 0
+// Download ...
+func (c *Client) Download() error {
+	l, err := c.contentLength()
+	if err != nil {
+		return err
 	}
-	start := 1
-	end := start + 10000
-	for {
-		r := &rangeProperty{
-			dst:   fmt.Sprintf("file%d.jpg", i),
-			start: start,
-			end:   end,
-		}
-		out = append(out, r)
-		start += 10000
-		end := start + 10000
-		if end > contentLength {
-			end = contentLength
-		}
-	}
-	return out
-}
-
-func Download() {
-
-}
-
-// 一時保存ファイルの全削除
-func removeFiles(ps []*rangeProperty) error {
+	ps := newRangeProperties(l)
 	for _, p := range ps {
-		err := os.Remove(p.dst)
+		err = c.rangeDownload(p)
 		if err != nil {
 			return err
 		}
 	}
+	for _, p := range ps {
+		fmt.Printf("%v", p)
+	}
+	defer removeFiles(ps)
+	src := make([]string, len(ps))
+	for i, p := range ps {
+		src[i] = p.path
+	}
+	err = mergeFiles(src, "output.jpg")
+	if err != nil {
+		return nil
+	}
 	return nil
+}
+
+// contentLengthを取得
+func (c *Client) contentLength() (int, error) {
+	res, err := c.Head(c.url)
+	if err != nil {
+		return 0, err
+	}
+	return strconv.Atoi(res.Header.Get("Content-Length"))
+}
+
+// rangeDownloadの引数として必要なrangePropertyを生成
+func newRangeProperties(contentLength int) []*rangeProperty {
+	num := 1000000
+
+	maxIndex := int(math.Ceil(float64(contentLength) / float64(num)))
+
+	f := func(i int) *rangeProperty {
+		start := 0
+		if i != 0 {
+			start = i*num + 1
+		}
+		end := (i + 1) * num
+		if end > contentLength {
+			end = contentLength
+		}
+		return &rangeProperty{
+			path:  fmt.Sprintf("file%d.jpg", i),
+			start: start,
+			end:   end,
+		}
+	}
+
+	var out []*rangeProperty
+
+	for i := 0; i < maxIndex; i++ {
+		start := i + num
+		end := start + num
+		if end > contentLength {
+			end = contentLength
+		}
+		out = append(out, f(i))
+	}
+
+	return out
 }
 
 // ファイルの分割ダウンロード
@@ -79,7 +113,7 @@ func (c *Client) rangeDownload(r *rangeProperty) error {
 		return err
 	}
 	defer res.Body.Close()
-	f, err := os.Create(r.dst)
+	f, err := os.Create(r.path)
 	if err != nil {
 		return err
 	}
@@ -94,7 +128,7 @@ func (c *Client) rangeDownload(r *rangeProperty) error {
 // ダウンロードした分割ファイルのマージ
 // src -> 元の分割ファイル名
 // dst -> マージ先のファイル名
-func (c *Client) mergeFiles(src []string, dst string) error {
+func mergeFiles(src []string, dst string) error {
 	f, err := os.Create(dst)
 	if err != nil {
 		return err
@@ -114,11 +148,13 @@ func (c *Client) mergeFiles(src []string, dst string) error {
 	return nil
 }
 
-// contentLengthを取得
-func (c *Client) contentLength() (int, error) {
-	res, err := c.Head(c.url)
-	if err != nil {
-		return 0, err
+// 一時保存ファイルの全削除
+func removeFiles(ps []*rangeProperty) error {
+	for _, p := range ps {
+		err := os.Remove(p.path)
+		if err != nil {
+			return err
+		}
 	}
-	return strconv.Atoi(res.Header.Get("Content-Length"))
+	return nil
 }

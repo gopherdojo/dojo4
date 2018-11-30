@@ -17,8 +17,12 @@ func TestContentLength(t *testing.T) {
 }
 
 func TestNewRangeProperties(t *testing.T) {
-	ps := newRangeProperties(40000)
-	t.Logf("%v", ps)
+	ps := newRangeProperties(40001)
+	// t.Logf("%v", ps[0])
+	// t.Logf("%v", ps[1])
+	// t.Logf("%v", ps[2])
+	// t.Logf("%v", ps[3])
+	// t.Logf("%v", ps[4])
 }
 
 func TestRangeDownload(t *testing.T) {
@@ -28,10 +32,10 @@ func TestRangeDownload(t *testing.T) {
 }
 
 func TestMergeFiles(t *testing.T) {
-	c := NewClient(URL)
-	src := []string{"1.jpg", "2.jpg"}
-	err := c.mergeFiles(src, "image.jpg")
-	if err != nil {
-		t.Error(err)
-	}
+	// c := NewClient(URL)
+	// src := []string{"1.jpg", "2.jpg"}
+	// err := c.mergeFiles(src, "image.jpg")
+	// if err != nil {
+	// 	t.Error(err)
+	// }
 }

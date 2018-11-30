@@ -17,7 +17,7 @@ func TestContentLength(t *testing.T) {
 }
 
 func TestNewRangeProperties(t *testing.T) {
-	ps := newRangeProperties(40001)
+	// ps := newRangeProperties(40001)
 	// t.Logf("%v", ps[0])
 	// t.Logf("%v", ps[1])
 	// t.Logf("%v", ps[2])

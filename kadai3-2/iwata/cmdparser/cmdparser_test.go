@@ -29,7 +29,7 @@ func TestCmd_Parse(t *testing.T) {
 			"default option",
 			"https://example.com",
 			&cmdparser.Config{
-				Parallel: runtime.NumCPU(),
+				Parallel: uint(runtime.NumCPU()),
 				Timeout:  15,
 				Output:   "./",
 				URL:      "https://example.com",

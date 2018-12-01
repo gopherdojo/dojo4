@@ -2,17 +2,21 @@ package main
 
 import (
 	"fmt"
+	"log"
+	"time"
 
 	"github.com/decoch/dojo4/kadai3-1/decoch/score"
-	"github.com/decoch/dojo4/kadai3-1/decoch/timer"
 	"github.com/decoch/dojo4/kadai3-1/decoch/typing"
 )
 
 func main() {
 	fmt.Println("### start typing game. ###")
 
-	typeCh := typing.Words()
-	timerCh := timer.NewCh(10)
+	typeCh, err := typing.Words()
+	if err != nil {
+		log.Fatal(err)
+	}
+	timerCh := time.After(10 * time.Second)
 
 	counter := new(score.Counter)
 
@@ -22,7 +26,7 @@ func main() {
 			if v1 {
 				counter.Add(1)
 			}
-		case _ = <-timerCh:
+		case <-timerCh:
 			fmt.Printf("\n### Score: %d ###\n", counter.Value())
 			fmt.Println("### end typing game. ###")
 			return

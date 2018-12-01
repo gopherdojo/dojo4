@@ -4,22 +4,21 @@ import (
 	"bufio"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"math/rand"
 	"os"
 	"strings"
 	"time"
 )
 
-func Words() <-chan bool {
+func Words() (<-chan bool, error) {
 	inputCh := make(chan bool)
 
-	go func() {
-		words, err := getWords()
-		if err != nil {
-			log.Fatalln("cannot get words.", err)
-		}
+	words, err := getWords()
+	if err != nil {
+		return nil, err
+	}
 
+	go func() {
 		stdin := bufio.NewScanner(os.Stdin)
 		rand.Seed(time.Now().UnixNano())
 
@@ -42,7 +41,7 @@ func Words() <-chan bool {
 		close(inputCh)
 	}()
 
-	return inputCh
+	return inputCh, nil
 }
 
 func getWords() ([]string, error) {

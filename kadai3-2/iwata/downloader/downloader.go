@@ -8,8 +8,6 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
-	"sort"
-	"sync"
 	"time"
 
 	"github.com/pkg/errors"
@@ -27,16 +25,13 @@ type ChunkRequest struct {
 	End   uint
 }
 
-type ChunkFiles struct {
-	Files []string
-	mu    sync.Mutex
-}
+type ChunkFiles []string
 
-func NewDownloader(procs uint, tempDir string) *Downloader {
+func New(procs uint, tempDir string) *Downloader {
 	return &Downloader{procs: procs, dir: tempDir}
 }
 
-func (d *Downloader) Do(url string, timeout time.Duration) (*ChunkFiles, error) {
+func (d *Downloader) Do(url string, timeout time.Duration) (ChunkFiles, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), timeout)
 	defer cancel()
 
@@ -46,10 +41,11 @@ func (d *Downloader) Do(url string, timeout time.Duration) (*ChunkFiles, error) 
 	}
 
 	cr := makeChunkRequests(length, d.procs)
-	cf := &ChunkFiles{Files: make([]string, d.procs)}
+	cf := ChunkFiles(make([]string, d.procs))
 
 	eg, ctxEg := errgroup.WithContext(ctx)
-	for _, req := range cr {
+	for i, req := range cr {
+		i := i
 		req := req
 		eg.Go(func() error {
 			res, err := req.Do(ctxEg, url)
@@ -58,7 +54,7 @@ func (d *Downloader) Do(url string, timeout time.Duration) (*ChunkFiles, error) 
 			}
 			defer res.Body.Close()
 
-			f := filepath.Join(d.dir, string(req.Start))
+			f := filepath.Join(d.dir, fmt.Sprintf("%d", req.Start))
 			w, err := os.Create(f)
 			if err != nil {
 				return errors.Wrapf(err, "failed to create a chunk file: %s", f)
@@ -70,9 +66,7 @@ func (d *Downloader) Do(url string, timeout time.Duration) (*ChunkFiles, error) 
 				return errors.Wrapf(err, "failed to dump a chunk body to %s", f)
 			}
 
-			cf.mu.Lock()
-			cf.Files = append(cf.Files, f)
-			cf.mu.Unlock()
+			cf[i] = f
 
 			return nil
 		})
@@ -113,7 +107,7 @@ func makeChunkRequests(length, p uint) []*ChunkRequest {
 	for i := uint(0); i < p; i++ {
 		s := i * chunkSize
 		e := s + chunkSize - 1
-		buf = append(buf, &ChunkRequest{Start: s, End: e})
+		buf[i] = &ChunkRequest{Start: s, End: e}
 	}
 
 	return buf
@@ -125,23 +119,22 @@ func (r *ChunkRequest) Do(ctx context.Context, url string) (*http.Response, erro
 		return nil, errors.Wrapf(err, "failed to GET: %s", url)
 	}
 
-	req.Header.Set("Range", fmt.Sprintf("bytes=%d-%d", r.Start, r.End))
 	req = req.WithContext(ctx)
+	req.Header.Set("Range", fmt.Sprintf("bytes=%d-%d", r.Start, r.End))
 
 	return http.DefaultClient.Do(req)
 }
 
-func (c *ChunkFiles) Save(dist string) error {
+func (c ChunkFiles) Save(dist string) error {
 	d, err := os.Create(dist)
 	if err != nil {
 		return errors.Wrapf(err, "failed to create %s", dist)
 	}
 
-	sort.Strings(c.Files)
-	for _, f := range c.Files {
+	for _, f := range c {
 		chunk, err := os.Open(f)
 		if err != nil {
-			return errors.Wrapf(err, "failed to open %s", chunk)
+			return errors.Wrapf(err, "failed to open %s", f)
 		}
 		defer chunk.Close()
 
@@ -151,7 +144,7 @@ func (c *ChunkFiles) Save(dist string) error {
 		}
 	}
 
-	if err := os.RemoveAll(filepath.Dir(c.Files[0])); err != nil {
+	if err := os.RemoveAll(filepath.Dir(c[0])); err != nil {
 		return errors.Wrap(err, "failed to clean up temp files")
 	}
 

@@ -1,6 +1,6 @@
 GOFILES=$(shell find . -name '*.go')
 GOPACKAGES=$(shell go list ./...)
-BINFILE='bin/typing-game'
+BINFILE='bin/mget'
 COVER_DIR='./cover'
 
 default: build

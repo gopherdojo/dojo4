@@ -17,7 +17,7 @@ func TestNewImageType(t *testing.T) {
 
 	for _, c := range cases {
 		actual := NewImageType(c.str)
-		if *actual != c.imageType {
+		if actual != c.imageType {
 			t.Errorf("expected %v, actual %v.", c.imageType, actual)
 		}
 	}

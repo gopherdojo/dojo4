@@ -8,16 +8,20 @@ import (
 )
 
 // Files get files filter by extensions.
-func Files(dir string, extensions []string) []string {
+func Files(dir string, extensions []string) ([]string, error) {
 	files, err := ioutil.ReadDir(dir)
 	if err != nil {
-		panic(err)
+		return []string{}, err
 	}
 
 	var paths []string
 	for _, file := range files {
 		if file.IsDir() {
-			paths = append(paths, Files(filepath.Join(dir, file.Name()), extensions)...)
+			files, err := Files(filepath.Join(dir, file.Name()), extensions)
+			if err != nil {
+				return []string{}, err
+			}
+			paths = append(paths, files...)
 			continue
 		}
 		if hasExtension(file, extensions) {
@@ -25,7 +29,7 @@ func Files(dir string, extensions []string) []string {
 		}
 	}
 
-	return paths
+	return paths, nil
 }
 
 func hasExtension(file os.FileInfo, extensions []string) bool {

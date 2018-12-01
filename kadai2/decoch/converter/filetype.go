@@ -16,15 +16,15 @@ var (
 )
 
 // NewImageType create a ImageType instance.
-func NewImageType(str string) *ImageType {
+func NewImageType(str string) ImageType {
 	for _, imageType := range []ImageType{Png, Jpeg, Gif} {
 		for _, ex := range *imageType.Extensions() {
 			if ex == str {
-				return &imageType
+				return imageType
 			}
 		}
 	}
-	return nil
+	return Unknown
 }
 
 // Extensions get extensions of type.
@@ -42,7 +42,7 @@ func (i *ImageType) Extensions() *[]string {
 }
 
 // Converter get a image convert function.
-func (i *ImageType) Converter() func(src string) error {
+func (i ImageType) Converter() func(src string) error {
 	switch i {
 	case Png:
 		return convertToPng

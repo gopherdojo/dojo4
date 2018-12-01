@@ -13,7 +13,11 @@ func main() {
 		log.Fatal(err)
 	}
 
-	fileNames := reader.Files(command.Dir, *command.InputType.Extensions())
+	fileNames, err := reader.Files(command.Dir, *command.InputType.Extensions())
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	for _, fileName := range fileNames {
 		if err := command.OutputType.Converter()(fileName); err != nil {
 			log.Fatal(err)

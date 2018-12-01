@@ -32,13 +32,13 @@ func Parse() (*Command, error) {
 	if err != nil {
 		return nil, err
 	}
-	cmd.InputType = *inputType
+	cmd.InputType = inputType
 
 	outputType, err := parseImageType(*outputTypeFlag)
 	if err != nil {
 		return nil, err
 	}
-	cmd.OutputType = *outputType
+	cmd.OutputType = outputType
 
 	return &cmd, nil
 }
@@ -50,10 +50,10 @@ func parseCommandLineArgs(args []string) (string, error) {
 	return args[0], nil
 }
 
-func parseImageType(str string) (*converter.ImageType, error) {
+func parseImageType(str string) (converter.ImageType, error) {
 	inputType := converter.NewImageType(str)
-	if inputType == nil || len(string(*inputType)) == 0 {
-		return nil, errors.New("invalid image type")
+	if inputType == converter.Unknown || len(string(inputType)) == 0 {
+		return converter.Unknown, errors.New("invalid image type")
 	}
 	return inputType, nil
 }

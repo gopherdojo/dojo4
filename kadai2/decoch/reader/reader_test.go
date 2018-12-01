@@ -3,7 +3,6 @@ package reader
 import (
 	"os"
 	"testing"
-	"time"
 )
 
 func TestHasExtension(t *testing.T) {
@@ -25,29 +24,9 @@ func TestNotHasExtension(t *testing.T) {
 
 type fileInfoMock struct {
 	name string
+	os.FileInfo
 }
 
 func (f *fileInfoMock) Name() string {
 	return f.name
-}
-
-func (f *fileInfoMock) Size() int64 {
-	panic("invalid access")
-	return 0
-}
-func (f *fileInfoMock) Mode() os.FileMode {
-	panic("invalid access")
-	return os.FileMode(0)
-}
-func (f *fileInfoMock) ModTime() time.Time {
-	panic("invalid access")
-	return time.Now()
-}
-func (f *fileInfoMock) IsDir() bool {
-	panic("invalid access")
-	return false
-}
-func (f *fileInfoMock) Sys() interface{} {
-	panic("invalid access")
-	return nil
 }

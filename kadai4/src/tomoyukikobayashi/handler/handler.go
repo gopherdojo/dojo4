@@ -8,8 +8,6 @@ import (
 	"time"
 )
 
-// TOOD ハンドラのテストを書いてみる
-
 func init() {
 	rand.Seed(time.Now().UnixNano())
 }
@@ -39,17 +37,17 @@ func (f *Fourtune) WriteJSON(w io.Writer) error {
 
 const (
 	// DAIKICHI 大吉
-	DAIKICHI = 0
+	DAIKICHI = iota
 	// CYUKICHI 中吉
-	CYUKICHI = iota
+	CYUKICHI
 	// KICHI 吉
-	KICHI = iota
+	KICHI
 	// SYOKICHI 小吉
-	SYOKICHI = iota
+	SYOKICHI
 	// KYO 凶
-	KYO = iota
+	KYO
 	// DAIKYO 大凶
-	DAIKYO = iota
+	DAIKYO
 )
 
 // Fourtunes 全てのおみくじデータを保持して、おみくじを引くロジックを提供
@@ -100,8 +98,6 @@ func (fs *Fourtunes) shoudBeHappy() bool {
 
 func (fs *Fourtunes) now() time.Time {
 	if fs.Clock == nil {
-		// TOOD デバッグ用 消す
-		//return time.Date(2018, time.Month(1), 1, 0, 0, 0, 0, time.UTC)
 		return time.Now()
 	}
 	return fs.Clock.Now()

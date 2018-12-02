@@ -20,3 +20,7 @@ make build
 ```
 curl localhost:8080
 ```
+ポートを変えたい場合には、-portオプションを指定してください
+```
+./serve -port 8090
+```

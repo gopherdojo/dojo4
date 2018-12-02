@@ -94,6 +94,7 @@ func (c *Client) rangeDownload(ctx context.Context, r *rangeProperty) error {
 			return
 		}
 		defer f.Close()
+
 		_, err = io.Copy(f, res.Body)
 		if err != nil {
 			errCh <- err
@@ -101,14 +102,13 @@ func (c *Client) rangeDownload(ctx context.Context, r *rangeProperty) error {
 		}
 		errCh <- nil
 	}()
+
 	select {
 	case err := <-errCh:
 		if err != nil {
-			fmt.Println(err.Error())
 			return err
 		}
 	case <-ctx.Done():
-		fmt.Println("強制終了")
 		return ctx.Err()
 	}
 

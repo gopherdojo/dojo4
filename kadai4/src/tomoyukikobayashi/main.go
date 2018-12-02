@@ -2,7 +2,7 @@ package main
 
 import (
 	"flag"
-	"fmt"
+	"log"
 	"net/http"
 
 	"tomoyukikobayashi/handler"
@@ -15,7 +15,7 @@ var servePort = flag.String("port", defaultPort, "service port")
 func main() {
 	flag.Parse()
 
-	fmt.Printf("serve port : %v", *servePort)
+	log.Printf("serve port : %v", *servePort)
 
 	http.HandleFunc("/", handler.Fortune)
 	http.ListenAndServe(":"+*servePort, nil)

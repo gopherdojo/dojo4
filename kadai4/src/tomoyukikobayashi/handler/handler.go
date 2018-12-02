@@ -3,6 +3,7 @@ package handler
 import (
 	"encoding/json"
 	"io"
+	"log"
 	"math/rand"
 	"net/http"
 	"time"
@@ -17,7 +18,11 @@ func Fortune(w http.ResponseWriter, r *http.Request) {
 	f := fourtunes.Omikuji()
 	// TOOD 1個しかないのでここでやるが、レスポンス毎ではなく、middlewareなどで横断的にやらせたい
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
-	f.WriteJSON(w)
+	err := f.WriteJSON(w)
+	if err != nil {
+		log.Fatalf("unexpected error occurred : %v", err)
+		http.Error(w, "Internal Server Error", 500)
+	}
 }
 
 // Fourtune おみくじ用データとロジックを格納する

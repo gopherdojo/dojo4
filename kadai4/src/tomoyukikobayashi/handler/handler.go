@@ -21,7 +21,7 @@ func Fortune(w http.ResponseWriter, r *http.Request) {
 	err := f.WriteJSON(w)
 	if err != nil {
 		log.Fatalf("unexpected error occurred : %v", err)
-		http.Error(w, "Internal Server Error", 500)
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 	}
 }
 

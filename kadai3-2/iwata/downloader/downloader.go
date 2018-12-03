@@ -102,12 +102,12 @@ func GetContentLength(ctx context.Context, url string) (uint, error) {
 
 func makeChunkRequests(length, p uint) []*ChunkRequest {
 	chunkSize := uint(math.Ceil(float64(length) / float64(p)))
-	buf := make([]*ChunkRequest, p)
+	buf := make([]*ChunkRequest, 0, p)
 	// Content-Rangesは0番目からはじまり, Content-Length-1番目まで
 	for i := uint(0); i < p; i++ {
 		s := i * chunkSize
 		e := s + chunkSize - 1
-		buf[i] = &ChunkRequest{Start: s, End: e}
+		buf = append(buf, &ChunkRequest{Start: s, End: e})
 	}
 
 	return buf

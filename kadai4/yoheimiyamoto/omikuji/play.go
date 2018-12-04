@@ -5,17 +5,17 @@ import (
 	"time"
 )
 
-func Play() *Result {
-	t := getType()
+func play() *Result {
+	now := time.Now()
+	t := getType(now)
 	return &Result{t}
 }
 
 // 吉凶を取得（大吉,中吉,小吉,凶,大凶）
-func getType() string {
+func getType(now time.Time) string {
 	// 三が日は大吉にする
-	t := time.Now()
-	if t.Month() == 1 {
-		if t.Day() == 1 || t.Day() == 2 || t.Day() == 3 {
+	if now.Month() == 1 {
+		if now.Day() == 1 || now.Day() == 2 || now.Day() == 3 {
 			return "大吉"
 		}
 	}

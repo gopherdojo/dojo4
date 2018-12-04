@@ -10,6 +10,7 @@ func Play() *Result {
 	return &Result{t}
 }
 
+// 吉凶を取得（大吉,中吉,小吉,凶,大凶）
 func getType() string {
 	// 三が日は大吉にする
 	t := time.Now()

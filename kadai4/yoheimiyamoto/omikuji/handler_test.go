@@ -1,6 +1,7 @@
 package omikuji
 
 import (
+	"encoding/json"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
@@ -22,10 +23,13 @@ func TestHandler(t *testing.T) {
 	if err != nil {
 		t.Fatal("unexpected error")
 	}
-	const expected = ""
-	if string(b) != expected {
-		{
-			t.Fatalf("unexpected response: %s", string(b))
-		}
+	var actual Result
+	err = json.Unmarshal(b, &actual)
+	if err != nil {
+		t.Fatal(err)
+	}
+	expected := Result{"大吉"}
+	if actual != expected {
+		t.Fatalf("actual: %v, expected: %v", actual, expected)
 	}
 }

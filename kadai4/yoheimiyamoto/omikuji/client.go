@@ -5,9 +5,22 @@ import (
 	"time"
 )
 
-func play() *Result {
-	now := time.Now()
-	t := getType(now)
+type client struct {
+	now now
+}
+
+type now func() time.Time
+
+func NewClient() *client {
+	return &client{
+		now(func() time.Time {
+			return time.Now()
+		}),
+	}
+}
+
+func (c *client) play() *Result {
+	t := getType(c.now())
 	return &Result{t}
 }
 

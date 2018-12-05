@@ -7,7 +7,8 @@ import (
 )
 
 func Handler(w http.ResponseWriter, r *http.Request) {
-	result := play()
+	c := NewClient()
+	result := c.play()
 	err := json.NewEncoder(w).Encode(result)
 	if err != nil {
 		log.Fatal(err)

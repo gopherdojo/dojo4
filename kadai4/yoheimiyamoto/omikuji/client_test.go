@@ -6,11 +6,17 @@ import (
 )
 
 func TestGetType(t *testing.T) {
-	now := time.Date(2019, 1, 1, 0, 0, 0, 0, time.Local)
-	r := getType(now)
-	const expected = "大吉"
+	t.Run("", func(t *testing.T) {
+		testGetType(t, time.Date(2019, 1, 1, 0, 0, 0, 0, time.Local), "大吉")
+	})
+}
+
+// TestGetTypeのテストヘルパー
+func testGetType(t *testing.T, in time.Time, expected string) {
+	t.Helper()
+	r := getType(in)
 	if r != expected {
-		t.Fatalf("expected: %s, actual: %s", expected, r)
+		t.Errorf("expected: %s, actual: %s", expected, r)
 	}
 }
 

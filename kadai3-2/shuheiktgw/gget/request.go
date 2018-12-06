@@ -12,11 +12,22 @@ import (
 	"golang.org/x/sync/errgroup"
 )
 
-// Request represents a request to download a file
-type Request struct {
+// RangeRequest represents a request with a range access
+type RangeRequest struct {
 	URL    string
 	FName  string
 	Ranges []*Range
+}
+
+// NonRangeRequest represents a request without a range access
+type NonRangeRequest struct {
+	URL   string
+	FName string
+}
+
+// Request represents a request
+type Request interface {
+	Do() error
 }
 
 // Range tells tha range of file to download
@@ -26,7 +37,7 @@ type Range struct {
 }
 
 // NewRequest initializes Request object
-func NewRequest(rawURL string, parallel int) (*Request, error) {
+func NewRequest(rawURL string, parallel int) (Request, error) {
 	u, err := url.Parse(rawURL)
 	if err != nil {
 		return nil, err
@@ -40,6 +51,10 @@ func NewRequest(rawURL string, parallel int) (*Request, error) {
 		return nil, err
 	}
 	defer res.Body.Close()
+
+	if res.Header.Get("Accept-Ranges") != "bytes" {
+		return &NonRangeRequest{URL: rawURL, FName: fname}, nil
+	}
 
 	total := res.ContentLength
 	unit := total / int64(parallel)
@@ -63,11 +78,25 @@ func NewRequest(rawURL string, parallel int) (*Request, error) {
 		ranges[i] = &Range{start: start, end: end}
 	}
 
-	return &Request{URL: rawURL, FName: fname, Ranges: ranges}, nil
+	return &RangeRequest{URL: rawURL, FName: fname, Ranges: ranges}, nil
 }
 
 // Do sends a real HTTP requests in parallel
-func (r *Request) Do() error {
+func (r *NonRangeRequest) Do() error {
+	req, err := http.NewRequest(http.MethodGet, r.URL, nil)
+
+	client := http.DefaultClient
+	res, err := client.Do(req)
+	if err != nil {
+		return err
+	}
+	defer res.Body.Close()
+
+	return saveResponseBody(r.FName, res)
+}
+
+// Do sends a real HTTP requests in parallel
+func (r *RangeRequest) Do() error {
 	eg, _ := errgroup.WithContext(context.TODO())
 
 	for idx := range r.Ranges {
@@ -86,7 +115,7 @@ func (r *Request) Do() error {
 	return r.mergeFiles()
 }
 
-func (r *Request) do(idx int) error {
+func (r *RangeRequest) do(idx int) error {
 	req, err := http.NewRequest(http.MethodGet, r.URL, nil)
 	if err != nil {
 		return err
@@ -104,20 +133,10 @@ func (r *Request) do(idx int) error {
 	defer res.Body.Close()
 
 	tmpFName := fmt.Sprintf("%s.%d", r.FName, idx)
-	file, err := os.Create(tmpFName)
-	if err != nil {
-		return err
-	}
-	defer file.Close()
-
-	if _, err := io.Copy(file, res.Body); err != nil {
-		return err
-	}
-
-	return nil
+	return saveResponseBody(tmpFName, res)
 }
 
-func (r *Request) mergeFiles() error {
+func (r *RangeRequest) mergeFiles() error {
 	f, err := os.Create(r.FName)
 	if err != nil {
 		return err
@@ -136,6 +155,20 @@ func (r *Request) mergeFiles() error {
 		if err := os.Remove(tmpFName); err != nil {
 			return err
 		}
+	}
+
+	return nil
+}
+
+func saveResponseBody(fname string, response *http.Response) error {
+	file, err := os.Create(fname)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+
+	if _, err := io.Copy(file, response.Body); err != nil {
+		return err
 	}
 
 	return nil

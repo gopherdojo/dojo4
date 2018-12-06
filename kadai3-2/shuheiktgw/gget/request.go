@@ -97,14 +97,14 @@ func (r *NonRangeRequest) Do() error {
 
 // Do sends a real HTTP requests in parallel
 func (r *RangeRequest) Do() error {
-	eg, _ := errgroup.WithContext(context.TODO())
+	eg, ctx := errgroup.WithContext(context.TODO())
 
 	for idx := range r.Ranges {
 		// DO NOT refer to idx directly since function below
 		// is a closure and idx changes for each iterations
 		i := idx
 		eg.Go(func() error {
-			return r.do(i)
+			return r.do(i, ctx)
 		})
 	}
 
@@ -115,11 +115,12 @@ func (r *RangeRequest) Do() error {
 	return r.mergeFiles()
 }
 
-func (r *RangeRequest) do(idx int) error {
+func (r *RangeRequest) do(idx int, ctx context.Context) error {
 	req, err := http.NewRequest(http.MethodGet, r.URL, nil)
 	if err != nil {
 		return err
 	}
+	req = req.WithContext(ctx)
 
 	ran := r.Ranges[idx]
 	req.Header.Set("Range", fmt.Sprintf("bytes=%d-%d", ran.start, ran.end))

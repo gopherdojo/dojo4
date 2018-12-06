@@ -152,7 +152,7 @@ func TestEncode_Success(t *testing.T) {
 	defer os.Remove(output)
 }
 
-func TestRun(t *testing.T) {
+func TestConverter_Run(t *testing.T) {
 	c := imgconv.Converter{
 		InputFormat:  "png",
 		OutputFormat: "jpg",

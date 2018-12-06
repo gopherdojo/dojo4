@@ -1,4 +1,4 @@
-package imgconv
+package imgconv_test
 
 import (
 	"image"
@@ -6,33 +6,35 @@ import (
 	"os"
 	"reflect"
 	"testing"
+
+	"github.com/gopherdojo/dojo4/kadai2/uobikiemukot/imgconv"
 )
 
 func TestSearch(t *testing.T) {
 	data := []struct {
-		config Converter
+		config imgconv.Converter
 		root   string
 		expect []string
 	}{
 		{
-			config: Converter{InputFormat: "png"},
+			config: imgconv.Converter{InputFormat: "png"},
 			root:   "testdata/subdir/a",
 			expect: []string{"testdata/subdir/a/1.png", "testdata/subdir/a/c/2.png"},
 		},
 		{
-			config: Converter{InputFormat: "jpg"},
+			config: imgconv.Converter{InputFormat: "jpg"},
 			root:   "testdata/subdir/a",
 			expect: []string{"testdata/subdir/a/1.jpg", "testdata/subdir/a/c/2.jpg"},
 		},
 		{
-			config: Converter{InputFormat: "gif"},
+			config: imgconv.Converter{InputFormat: "gif"},
 			root:   "testdata/subdir/b",
 			expect: []string{"testdata/subdir/b/3.gif"},
 		},
 	}
 
 	for _, d := range data {
-		result, err := search(d.root, d.config.InputFormat)
+		result, err := imgconv.ExportSearch(d.root, d.config.InputFormat)
 		if err != nil {
 			t.Errorf("search() failed: %s\n", err)
 		}
@@ -50,7 +52,7 @@ func TestDecode_Success(t *testing.T) {
 	}
 
 	for _, input := range data {
-		_, err := decode(input)
+		_, err := imgconv.ExportDecode(input)
 		if err != nil {
 			t.Errorf("decode(%s) failed: %s\n", input, err)
 		}
@@ -64,7 +66,7 @@ func TestDecode_Failure(t *testing.T) {
 	}
 
 	for _, input := range data {
-		_, err := decode(input)
+		_, err := imgconv.ExportDecode(input)
 		if err == nil {
 			t.Errorf("decode(%s) succeeded (must fail)\n", input)
 		}
@@ -74,7 +76,7 @@ func TestDecode_Failure(t *testing.T) {
 func testCreateImage(t *testing.T, path string) image.Image {
 	t.Helper()
 
-	img, err := decode(path)
+	img, err := imgconv.ExportDecode(path)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -83,7 +85,7 @@ func testCreateImage(t *testing.T, path string) image.Image {
 }
 
 func TestEncode_Success(t *testing.T) {
-	data := []Converter{
+	data := []imgconv.Converter{
 		{InputFormat: "png", OutputFormat: "jpg"},
 		{InputFormat: "jpg", OutputFormat: "gif"},
 		{InputFormat: "gif", OutputFormat: "png"},
@@ -92,8 +94,8 @@ func TestEncode_Success(t *testing.T) {
 	output := "testdata/converted_image.jpg"
 	img := testCreateImage(t, "testdata/subdir/a/1.png")
 
-	for _, config := range data {
-		err := config.encode(output, img)
+	for _, c := range data {
+		err := imgconv.ExportConverterEncode(&c, output, img)
 		if err != nil {
 			t.Errorf("encode() failed: %s\n", err)
 		}
@@ -102,7 +104,7 @@ func TestEncode_Success(t *testing.T) {
 }
 
 func TestRun(t *testing.T) {
-	c := Converter{
+	c := imgconv.Converter{
 		InputFormat:  "png",
 		OutputFormat: "jpg",
 		JPEGOptions:  jpeg.Options{Quality: 1},

@@ -149,7 +149,7 @@ func TestEncode_Success(t *testing.T) {
 			}
 		})
 	}
-	os.Remove(output)
+	defer os.Remove(output)
 }
 
 func TestRun(t *testing.T) {

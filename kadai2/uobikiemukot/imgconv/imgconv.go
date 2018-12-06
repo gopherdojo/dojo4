@@ -1,7 +1,6 @@
 package imgconv
 
 import (
-	"fmt"
 	"image"
 	"image/gif"
 	"image/jpeg"
@@ -10,6 +9,8 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+
+	"github.com/pkg/errors"
 )
 
 // Converter image converter.
@@ -34,7 +35,7 @@ func search(root, suffix string) ([]string, error) {
 
 	err := filepath.Walk(root, f)
 	if err != nil {
-		return nil, fmt.Errorf("%s (path: %s)", err, root)
+		return nil, errors.Wrapf(err, "path: %s", root)
 	}
 
 	return list, nil
@@ -83,19 +84,19 @@ func (c *Converter) encode(path string, img image.Image) error {
 func (c *Converter) Run(root string) error {
 	list, err := search(root, c.InputFormat)
 	if err != nil {
-		return fmt.Errorf("search(%s): %s", root, err)
+		return errors.Wrapf(err, "search(%s) failed", root)
 	}
 
 	for _, in := range list {
 		log.Printf("converting... %s\n", in)
 		img, err := decode(in)
 		if err != nil {
-			return fmt.Errorf("decode(%s): %s", in, err)
+			return errors.Wrapf(err, "decode(%s) failed", in)
 		}
 		out := strings.TrimSuffix(in, c.InputFormat) + c.OutputFormat
 		err = c.encode(out, img)
 		if err != nil {
-			return fmt.Errorf("encode(%s): %s", in, err)
+			return errors.Wrapf(err, "encode(%s) failed", in)
 		}
 	}
 

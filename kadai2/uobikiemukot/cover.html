@@ -1,0 +1,205 @@
+
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+		<style>
+			body {
+				background: black;
+				color: rgb(80, 80, 80);
+			}
+			body, pre, #legend span {
+				font-family: Menlo, monospace;
+				font-weight: bold;
+			}
+			#topbar {
+				background: black;
+				position: fixed;
+				top: 0; left: 0; right: 0;
+				height: 42px;
+				border-bottom: 1px solid rgb(80, 80, 80);
+			}
+			#content {
+				margin-top: 50px;
+			}
+			#nav, #legend {
+				float: left;
+				margin-left: 10px;
+			}
+			#legend {
+				margin-top: 12px;
+			}
+			#nav {
+				margin-top: 10px;
+			}
+			#legend span {
+				margin: 0 5px;
+			}
+			.cov0 { color: rgb(192, 0, 0) }
+.cov1 { color: rgb(128, 128, 128) }
+.cov2 { color: rgb(116, 140, 131) }
+.cov3 { color: rgb(104, 152, 134) }
+.cov4 { color: rgb(92, 164, 137) }
+.cov5 { color: rgb(80, 176, 140) }
+.cov6 { color: rgb(68, 188, 143) }
+.cov7 { color: rgb(56, 200, 146) }
+.cov8 { color: rgb(44, 212, 149) }
+.cov9 { color: rgb(32, 224, 152) }
+.cov10 { color: rgb(20, 236, 155) }
+
+		</style>
+	</head>
+	<body>
+		<div id="topbar">
+			<div id="nav">
+				<select id="files">
+				
+				<option value="file0">github.com/gopherdojo/dojo4/kadai2/uobikiemukot/imgconv/imgconv.go (85.4%)</option>
+				
+				</select>
+			</div>
+			<div id="legend">
+				<span>not tracked</span>
+			
+				<span class="cov0">not covered</span>
+				<span class="cov8">covered</span>
+			
+			</div>
+		</div>
+		<div id="content">
+		
+		<pre class="file" id="file0" style="display: none">package imgconv
+
+import (
+        "fmt"
+        "image"
+        "image/gif"
+        "image/jpeg"
+        "image/png"
+        "log"
+        "os"
+        "path/filepath"
+        "strings"
+)
+
+// Converter image converter.
+type Converter struct {
+        InputFormat  string       // input image format: "png" or "gif" or "jpg"
+        OutputFormat string       // output image format: "png" or "gif" or "jpg"
+        JPEGOptions  jpeg.Options // Options for jpeg.Encode()
+        GIFOptions   gif.Options  // Options for gif.Encode()
+}
+
+// search pass a root directory as an argument.
+// return all image files included in root directory and sub-directory.
+func search(root, suffix string) ([]string, error) <span class="cov8" title="1">{
+        var list []string
+
+        f := func(path string, info os.FileInfo, err error) error </span><span class="cov8" title="1">{
+                if info.Mode().IsRegular() &amp;&amp; !info.IsDir() &amp;&amp; strings.HasSuffix(path, suffix) </span><span class="cov8" title="1">{
+                        list = append(list, path)
+                }</span>
+                <span class="cov8" title="1">return nil</span>
+        }
+
+        <span class="cov8" title="1">err := filepath.Walk(root, f)
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, fmt.Errorf("%s (path: %s)", err, root)
+        }</span>
+
+        <span class="cov8" title="1">return list, nil</span>
+}
+
+// decode decode input image by specified path.
+func decode(path string) (image.Image, error) <span class="cov8" title="1">{
+        input, err := os.Open(path)
+        if err != nil </span><span class="cov8" title="1">{
+                return nil, err
+        }</span>
+        <span class="cov8" title="1">defer input.Close()
+
+        img, _, err := image.Decode(input)
+        if err != nil </span><span class="cov8" title="1">{
+                return nil, err
+        }</span>
+
+        <span class="cov8" title="1">return img, nil</span>
+}
+
+// encode encode image and write to specified path.
+func (c *Converter) encode(path string, img image.Image) error <span class="cov8" title="1">{
+        output, err := os.Create(path)
+        if err != nil </span><span class="cov0" title="0">{
+                return err
+        }</span>
+        <span class="cov8" title="1">defer output.Close()
+
+        switch c.OutputFormat </span>{
+        case "png":<span class="cov8" title="1">
+                err = png.Encode(output, img)</span>
+        case "jpg":<span class="cov8" title="1">
+                err = jpeg.Encode(output, img, &amp;c.JPEGOptions)</span>
+        case "gif":<span class="cov8" title="1">
+                err = gif.Encode(output, img, &amp;c.GIFOptions)</span>
+        }
+        <span class="cov8" title="1">if err != nil </span><span class="cov0" title="0">{
+                return err
+        }</span>
+
+        <span class="cov8" title="1">return nil</span>
+}
+
+// Run search images from root directory and convert to specified format.
+func (c *Converter) Run(root string) error <span class="cov8" title="1">{
+        list, err := search(root, c.InputFormat)
+        if err != nil </span><span class="cov0" title="0">{
+                return fmt.Errorf("search(%s): %s", root, err)
+        }</span>
+
+        <span class="cov8" title="1">for _, in := range list </span><span class="cov8" title="1">{
+                log.Printf("converting... %s\n", in)
+                img, err := decode(in)
+                if err != nil </span><span class="cov0" title="0">{
+                        return fmt.Errorf("decode(%s): %s", in, err)
+                }</span>
+                <span class="cov8" title="1">out := strings.TrimSuffix(in, c.InputFormat) + c.OutputFormat
+                err = c.encode(out, img)
+                if err != nil </span><span class="cov0" title="0">{
+                        return fmt.Errorf("encode(%s): %s", in, err)
+                }</span>
+        }
+
+        <span class="cov8" title="1">return nil</span>
+}
+</pre>
+		
+		</div>
+	</body>
+	<script>
+	(function() {
+		var files = document.getElementById('files');
+		var visible;
+		files.addEventListener('change', onChange, false);
+		function select(part) {
+			if (visible)
+				visible.style.display = 'none';
+			visible = document.getElementById(part);
+			if (!visible)
+				return;
+			files.value = part;
+			visible.style.display = 'block';
+			location.hash = part;
+		}
+		function onChange() {
+			select(files.value);
+			window.scrollTo(0, 0);
+		}
+		if (location.hash != "") {
+			select(location.hash.substr(1));
+		}
+		if (!visible) {
+			select("file0");
+		}
+	})();
+	</script>
+</html>

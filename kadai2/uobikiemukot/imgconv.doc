@@ -1,0 +1,41 @@
+PACKAGE DOCUMENTATION
+
+package imgconv
+    import "./imgconv"
+
+
+TYPES
+
+type Converter struct {
+    InputFormat  string       // input image format: "png" or "gif" or "jpg"
+    OutputFormat string       // output image format: "png" or "gif" or "jpg"
+    JPEGOptions  jpeg.Options // Options for jpeg.Encode()
+    GIFOptions   gif.Options  // Options for gif.Encode()
+}
+
+    Converter image converter.
+
+func (c *Converter) Run(root string) error
+    Run search images from root directory and convert to specified format.
+
+    Example:
+    c := imgconv.Converter{
+        InputFormat:  "png",
+        OutputFormat: "gif",
+        GIFOptions:   gif.Options{NumColors: 256},
+    }
+
+    root, err := filepath.Abs("./testdata/subdir")
+    if err != nil {
+        return
+    }
+
+    err = c.Run(root)
+    if err != nil {
+        return
+    }
+
+    fmt.Println("succeeded!")
+    // Output: succeeded!
+
+

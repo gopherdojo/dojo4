@@ -1,0 +1,25 @@
+package main
+
+import (
+	"flag"
+	"fmt"
+
+	imageconvert "github.com/YoheiMiyamoto/dojo4/kadai1/yoheimiyamoto/image-convert"
+)
+
+func main() {
+	dirPath := flag.String("dir", "", "dir path")
+	srcFormat := flag.String("srcFormat", "jpg", "srcFormat")
+	destFormat := flag.String("destFormat", "", "destFormat")
+	flag.Parse()
+
+	if *destFormat == "" {
+		fmt.Println("destFormat is required")
+		return
+	}
+
+	err := imageconvert.Converts(*dirPath, *srcFormat, *destFormat)
+	if err != nil {
+		panic(err)
+	}
+}

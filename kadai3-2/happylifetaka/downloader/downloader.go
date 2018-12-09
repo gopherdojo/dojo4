@@ -1,9 +1,9 @@
 package downloader
 
 import (
+	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"os"
 	"strconv"
@@ -11,6 +11,7 @@ import (
 	"golang.org/x/sync/errgroup"
 )
 
+// Downloader divide support donwloader
 type Downloader int
 
 type downloadInfo struct {
@@ -18,13 +19,18 @@ type downloadInfo struct {
 	endByte   int64
 }
 
-// Download
+type deleteFileError struct {
+	filename string
+	err      error
+}
+
+// Download download action
 // description:Download specified URL.
 // parameter
 // url :download target url.
 // saveFilePath:save file path.
 // div:Number of divided downloads.
-func (d *Downloader) Download(url string, saveFilePath string, div int64) error {
+func (d *Downloader) Download(url, saveFilePath string, div int64) error {
 	res, err := http.Head(url)
 	if err != nil {
 		fmt.Println("http Head error")
@@ -37,8 +43,8 @@ func (d *Downloader) Download(url string, saveFilePath string, div int64) error 
 	}
 
 	if !canRangeDownload(res.Header) {
-		fmt.Println("range download not support.")
-		return err
+		fmt.Println("[warn]range download not support.")
+		div = 1
 	}
 
 	di := splitDownloadLength(res.ContentLength, div)
@@ -66,26 +72,30 @@ func (d *Downloader) Download(url string, saveFilePath string, div int64) error 
 		return err
 	}
 
-	if err := deleteFiles(filenames); err != nil {
-		fmt.Println("join file error")
-		return err
+	deleteFileError := deleteFiles(filenames)
+
+	if len(deleteFileError) != 0 {
+		for _, e := range deleteFileError {
+			fmt.Printf("[delete file error.%s %s", e.filename, e.err)
+		}
+		return errors.New("download fail")
 	}
+
 	fmt.Println("download finish.")
 	return nil
 }
 
 func canRangeDownload(h http.Header) bool {
-	f := false
-	for k, v := range h {
-		if k == "Accept-Ranges" && len(v) > 0 && v[0] == "bytes" {
-			f = true
-			break
-		}
+	accept := h.Get("Accept-Ranges")
+
+	if accept == "bytes" {
+		return true
+	} else {
+		return false
 	}
-	return f
 }
 
-func splitDownloadLength(length int64, div int64) []downloadInfo {
+func splitDownloadLength(length, div int64) []downloadInfo {
 
 	divLength := length / div
 
@@ -101,7 +111,7 @@ func splitDownloadLength(length int64, div int64) []downloadInfo {
 	return a
 }
 
-func rangeDownload(index int, url string, s int64, e int64) error {
+func rangeDownload(index int, url string, s, e int64) error {
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		return err
@@ -110,19 +120,22 @@ func rangeDownload(index int, url string, s int64, e int64) error {
 	req.Header.Set("Range", fmt.Sprintf("bytes=%d-%d", s, e))
 
 	res, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return err
+	}
 	defer res.Body.Close()
+
+	outPath := strconv.Itoa(index) + ".temp.download"
+	out, err := os.Create(outPath)
 	if err != nil {
 		return err
 	}
-
-	out_path := strconv.Itoa(index) + ".temp.download"
-	out, err := os.Create(out_path)
 	defer out.Close()
-	if err != nil {
+
+	_, copyerr := io.Copy(out, res.Body)
+	if copyerr != nil {
 		return err
 	}
-
-	io.Copy(out, res.Body)
 	return nil
 }
 
@@ -133,25 +146,30 @@ func joinFiles(filenames []string, saveFilePath string) error {
 		files[i], _ = os.Open(filename)
 	}
 
-	reader := io.MultiReader(files...)
-	b, _ := ioutil.ReadAll(reader)
+	src := io.MultiReader(files...)
 
-	file, err := os.Create(saveFilePath)
+	dst, err := os.Create(saveFilePath)
 	if err != nil {
 		return err
 	}
-	defer file.Close()
+	defer dst.Close()
 
-	file.Write(([]byte)(b))
+	_, err = io.Copy(dst, src)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
-func deleteFiles(filenames []string) error {
+func deleteFiles(filenames []string) []deleteFileError {
+	result := []deleteFileError{}
+
 	for _, f := range filenames {
 		err := os.Remove(f)
 		if err != nil {
-			return err
+			result = append(result, deleteFileError{f, err})
 		}
 	}
-	return nil
+	return result
 }

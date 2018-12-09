@@ -17,7 +17,7 @@ type TypingGame int
 func (t *TypingGame) Start(r io.Reader) {
 	ch1 := input(r)
 	ch2 := wait(60)
-	var words = []string{"apple", "banana", "cherry", "plum", "grape", "pineapple"}
+	words := []string{"apple", "banana", "cherry", "plum", "grape", "pineapple"}
 
 	shuffle(words)
 	i := 0

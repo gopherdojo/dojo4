@@ -20,23 +20,27 @@ func main() {
 
 loop:
 	for {
-		// get first word
-		want := <-word
-		fmt.Println("current word:" + want)
+		var want, got string
 
-		// wait user's input
-		got := <-input
-		fmt.Println("you typed:" + got)
-
-		if want == got {
-			correct++
+		if want == "" {
+			want = <-word
+			fmt.Println("current word:" + want)
+			sum++
 		}
-		sum++
 
 		select {
+		case got = <-input:
+			fmt.Println("you typed:" + got)
 		case <-ctx.Done():
 			fmt.Println(ctx.Err())
 			break loop
+		}
+
+		if want != "" && got != "" {
+			if want == got {
+				correct++
+			}
+			want, got = "", ""
 		}
 	}
 

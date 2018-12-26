@@ -12,6 +12,7 @@ import (
 func main() {
 	bg := context.Background()
 	ctx, cancel := context.WithCancel(bg)
+	defer cancel()
 
 	input := typing.ReadInput(ctx, os.Stdin)
 	word := typing.GenWord(ctx)

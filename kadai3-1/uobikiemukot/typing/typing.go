@@ -36,11 +36,15 @@ func ReadInput(ctx context.Context, in io.Reader) <-chan string {
 	go func() {
 		defer close(ch)
 		sc := bufio.NewScanner(in)
-		for sc.Scan() {
+		for {
 			select {
-			case ch <- sc.Text():
 			case <-ctx.Done():
 				return
+			default:
+			}
+
+			if sc.Scan() {
+				ch <- sc.Text()
 			}
 		}
 	}()

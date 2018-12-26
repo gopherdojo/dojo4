@@ -10,7 +10,7 @@ import (
 
 // GenWord generate words and return string channel
 func GenWord(ctx context.Context) <-chan string {
-	ch := make(chan string, 0)
+	ch := make(chan string)
 	l := len(words)
 
 	rand.Seed(time.Now().Unix())
@@ -31,7 +31,7 @@ func GenWord(ctx context.Context) <-chan string {
 
 // ReadInput read io.Reader and return string channel
 func ReadInput(ctx context.Context, in io.Reader) <-chan string {
-	ch := make(chan string, 0)
+	ch := make(chan string)
 
 	go func() {
 		defer close(ch)

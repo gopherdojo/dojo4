@@ -10,13 +10,11 @@ import (
 )
 
 func main() {
-	bg := context.Background()
-	ctx, cancel := context.WithCancel(bg)
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
 	input := typing.ReadInput(ctx, os.Stdin)
 	word := typing.GenWord(ctx)
-	limit := time.After(5 * time.Second)
 
 	var correct, sum int
 
@@ -36,11 +34,9 @@ loop:
 		sum++
 
 		select {
-		case <-limit:
-			fmt.Println("time limit exceeded!")
-			cancel()
+		case <-ctx.Done():
+			fmt.Println(ctx.Err())
 			break loop
-		default:
 		}
 	}
 

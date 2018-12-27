@@ -108,7 +108,6 @@ func TestChunkRequest_Do(t *testing.T) {
 			if err != nil {
 				t.Fatalf("Failed to write response: %v", err)
 			}
-
 		}))
 		defer server.Close()
 
@@ -124,6 +123,14 @@ func TestChunkRequest_Do(t *testing.T) {
 		defer res.Body.Close()
 		if string(got) != wantBody {
 			t.Errorf("ChunkRequest.Do() body = %s, want = %s", string(got), wantBody)
+		}
+	})
+
+	t.Run("failed to GET with invalid URL", func(t *testing.T) {
+		r := &downloader.ChunkRequest{Start: 10, End: 20}
+		_, err := r.Do(ctx, "http2://example.com")
+		if err == nil {
+			t.Errorf("ChunkRequest.Do() didn't return error")
 		}
 	})
 }

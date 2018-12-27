@@ -2,6 +2,8 @@ package downloader_test
 
 import (
 	"context"
+	"fmt"
+	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -83,4 +85,45 @@ func TestGetContentLength(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestChunkRequest_Do(t *testing.T) {
+	ctx := context.Background()
+
+	t.Run("successfully", func(t *testing.T) {
+		r := &downloader.ChunkRequest{Start: 10, End: 50}
+		wantBody := "OK"
+
+		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+			meth := req.Method
+			if meth != "GET" {
+				t.Errorf("ChunkRequest.Do() sent %s request, want GET request", meth)
+			}
+			got := req.Header.Get("Range")
+			want := fmt.Sprintf("bytes=%d-%d", r.Start, r.End)
+			if got != want {
+				t.Errorf("ChunkRequest.Do() requested with Range %s, want %s", got, want)
+			}
+			_, err := w.Write([]byte(wantBody))
+			if err != nil {
+				t.Fatalf("Failed to write response: %v", err)
+			}
+
+		}))
+		defer server.Close()
+
+		res, err := r.Do(ctx, server.URL)
+		if err != nil {
+			t.Errorf("ChunkRequest.Do() error = %v, but not want any errors", err)
+		}
+
+		got, err := ioutil.ReadAll(res.Body)
+		if err != nil {
+			t.Fatalf("Failed to read Body: %v", err)
+		}
+		defer res.Body.Close()
+		if string(got) != wantBody {
+			t.Errorf("ChunkRequest.Do() body = %s, want = %s", string(got), wantBody)
+		}
+	})
 }
